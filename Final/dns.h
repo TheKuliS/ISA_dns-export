@@ -26,17 +26,16 @@
 struct dns_hdr
 {
 	uint16_t identification;
-	uint16_t query;
+	uint16_t flags;
 	uint16_t total_questions;
 	uint16_t total_answer_RRs;
 	uint16_t total_authority_RRs;
 	uint16_t total_additional_RRs;
 };
 
-struct dns_data
-{
-
-};
-
 void process_dns_record(struct dns_hdr* dns_header);
+void print_dns_header(struct dns_hdr* dns_header);
+void get_query_name(char* dns_data, unsigned int data_offset, char** query_name, unsigned int index, unsigned int max_len);
+void debug_data_print(unsigned char *data);
+
 #endif //ISA_DNS_H

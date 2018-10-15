@@ -36,7 +36,7 @@ unsigned short checksum(unsigned short *buf, int nwords) // Checksum
 // Open new raw connection socket
 int open_raw_socket()
 {
-	return socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
+	return socket(AF_PACKET, SOCK_RAW, htons(ETH_P_IP));
 }
 
 // Gets index of given interface
@@ -59,4 +59,43 @@ unsigned long receive_packet(void* buffer, unsigned int packet_size, int connect
 {
 	memset(buffer, 0, packet_size);
 	return recvfrom(connection_socket, buffer, packet_size, 0, NULL, NULL);
+}
+
+void print_ethernet_header(struct ether_header* ethernet_header)
+{
+	fprintf(stdout, "\nEthernet Header:\n");
+	fprintf(stdout, "\t|-Source Address : %.2X:%.2X:%.2X:%.2X:%.2X:%.2X\n",ethernet_header->ether_shost[0],ethernet_header->ether_shost[1],ethernet_header->ether_shost[2],ethernet_header->ether_shost[3],ethernet_header->ether_shost[4],ethernet_header->ether_shost[5]);
+	fprintf(stdout, "\t|-Destination Address : %.2X:%.2X:%.2X:%.2X:%.2X:%.2X\n",ethernet_header->ether_dhost[0],ethernet_header->ether_dhost[1],ethernet_header->ether_dhost[2],ethernet_header->ether_dhost[3],ethernet_header->ether_dhost[4],ethernet_header->ether_dhost[5]);
+	fprintf(stdout, "\t|-Protocol : %d\n",ethernet_header->ether_type);
+}
+
+void print_ip_header(struct iphdr* ip_header)
+{
+	struct sockaddr_in source;
+	struct sockaddr_in destination;
+
+	memset(&source, 0, sizeof(source));
+	source.sin_addr.s_addr = ip_header->saddr;
+	memset(&destination, 0, sizeof(destination));
+	destination.sin_addr.s_addr = ip_header->daddr;
+
+	fprintf(stdout, "\nIP Header:\n");
+	fprintf(stdout, "\t|-Version : %d\n",(unsigned int)ip_header->version);
+	fprintf(stdout , "\t|-Internet Header Length : %d DWORDS or %d Bytes\n",(unsigned int)ip_header->ihl,((unsigned int)(ip_header->ihl))*4);
+	fprintf(stdout , "\t|-Type Of Service : %d\n",(unsigned int)ip_header->tos);
+	fprintf(stdout , "\t|-Total Length : %d Bytes\n",ntohs(ip_header->tot_len));
+	fprintf(stdout , "\t|-Identification : %d\n",ntohs(ip_header->id));
+	fprintf(stdout , "\t|-Time To Live : %d\n",(unsigned int)ip_header->ttl);
+	fprintf(stdout , "\t|-Protocol : %d\n",(unsigned int)ip_header->protocol);
+	fprintf(stdout , "\t|-Header Checksum : %d\n",ntohs(ip_header->check));
+	fprintf(stdout , "\t|-Source IP : %s\n", inet_ntoa(source.sin_addr));
+	fprintf(stdout , "\t|-Destination IP : %s\n",inet_ntoa(destination.sin_addr));
+}
+void print_udp_header(struct udphdr* udp_header)
+{
+	fprintf(stdout, "\nUDP Header:\n");
+	fprintf(stdout , "\t|-Source Port : %d\n" , ntohs(udp_header->source));
+	fprintf(stdout , "\t|-Destination Port : %d\n" , ntohs(udp_header->dest));
+	fprintf(stdout , "\t|-UDP Length : %d\n" , ntohs(udp_header->len));
+	fprintf(stdout , "\t|-UDP Checksum : %d\n" , ntohs(udp_header->check));
 }
