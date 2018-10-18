@@ -10,6 +10,7 @@
 
 // Ports
 #define DNS_PORT 53
+#define C0 192
 
 // DNS record types
 #define A 1
@@ -33,9 +34,12 @@ struct dns_hdr
 	uint16_t total_additional_RRs;
 };
 
-void process_dns_record(struct dns_hdr* dns_header);
+void process_rr_data(char* dns_data, unsigned int data_offset, uint16_t rr_type, uint16_t rr_data_length, char** domain_name, unsigned int index, unsigned int max_len);
 void print_dns_header(struct dns_hdr* dns_header);
-void get_query_name(char* dns_data, unsigned int data_offset, char** query_name, unsigned int index, unsigned int max_len);
+void get_domain_name(char* dns_data, unsigned int data_offset, char** domain_name, unsigned int index, unsigned int max_len);
 void debug_data_print(unsigned char *data);
+uint16_t get_offset_to_skip_queries(char* dns_queries, uint16_t total_queries);
+void get_rr_type(char* dns_data, unsigned int data_offset, uint16_t* rr_type);
+void get_rr_data_length(char* dns_data, unsigned int data_offset, uint16_t* rr_data_length);
 
 #endif //ISA_DNS_H
