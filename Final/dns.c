@@ -34,12 +34,18 @@ void debug_data_print(unsigned char *data)
 }
 
 
-void process_rr_data(char* dns_data, unsigned int data_offset, uint16_t rr_type, uint16_t rr_data_length, char** domain_name, unsigned int index, unsigned int max_len)
+void process_rr_data(char* dns_data, unsigned int data_offset, uint16_t rr_type, uint16_t rr_data_length, char** answer_data, unsigned int index, unsigned int max_len)
 {
-	fprintf(stderr, "Dns: rr_type: %d | %d\n", rr_type, A);
+	//debug_data_print(dns_data);
 	if (rr_type == A)
 	{
-		fprintf(stderr, "Dns: Zpracujeme IPv4\n");
+		inet_ntop(AF_INET, (dns_data + data_offset), *answer_data, INET_ADDRSTRLEN);
+		fprintf(stderr, "Dns: IPv4: %s\n", *answer_data);
+	}
+	else if (rr_type == AAAA)
+	{
+		inet_ntop(AF_INET6, (dns_data + data_offset), *answer_data, INET6_ADDRSTRLEN);
+		fprintf(stderr, "Dns: IPv6: %s\n", *answer_data);
 	}
 	else if (rr_type == NS)
 	{
@@ -47,8 +53,8 @@ void process_rr_data(char* dns_data, unsigned int data_offset, uint16_t rr_type,
 	}
 	else if (rr_type == CNAME)
 	{
-		get_domain_name(dns_data, data_offset, domain_name, index, max_len);
-		fprintf(stderr, "Dns: cname: %s\n", *domain_name);
+		get_domain_name(dns_data, data_offset, answer_data, index, max_len);
+		fprintf(stderr, "Dns: cname: %s\n", *answer_data);
 	}
 	else if (rr_type == SOA)
 	{
@@ -79,11 +85,11 @@ void process_rr_data(char* dns_data, unsigned int data_offset, uint16_t rr_type,
 void print_dns_header(struct dns_hdr* dns_header)
 {
 	fprintf(stderr, "DNS Header:\n");
-	fprintf(stdout, "\t|-Identification : %.4x\n", ntohs(dns_header->identification));
-	/*fprintf(stdout, "\t|-Total questions : %hu\n", ntohs(dns_header->total_questions));
-	fprintf(stdout, "\t|-Total answer RRs : %hu\n", ntohs(dns_header->total_answer_RRs));
-	fprintf(stdout, "\t|-Total authority RRs : %hu\n", ntohs(dns_header->total_authority_RRs));
-	fprintf(stdout, "\t|-Total additional RRs : %hu\n", ntohs(dns_header->total_additional_RRs));*/
+	fprintf(stderr, "\t|-Identification : %hu\n", ntohs(dns_header->identification));
+	fprintf(stderr, "\t|-Total questions : %hu\n", ntohs(dns_header->total_questions));
+	fprintf(stderr, "\t|-Total answer RRs : %hu\n", ntohs(dns_header->total_answer_RRs));
+	fprintf(stderr, "\t|-Total authority RRs : %hu\n", ntohs(dns_header->total_authority_RRs));
+	fprintf(stderr, "\t|-Total additional RRs : %hu\n", ntohs(dns_header->total_additional_RRs));
 }
 
 void get_domain_name(char* dns_data, unsigned int data_offset, char** domain_name, unsigned int index, unsigned int max_len)
@@ -106,10 +112,11 @@ void get_domain_name(char* dns_data, unsigned int data_offset, char** domain_nam
 			exit(EXIT_FAILURE);
 		}
 
-		max_len = max_len + 20;
+		max_len += 20;
+		fprintf(stderr, "Dns: new max_len: %u\n", max_len);
 	}
 
-	//printf("*name_length = %d\n", (uint8_t) *name_length);
+	//fprintf(stderr, "*name_length = %d\n", (uint8_t) *name_length);
 	if ((uint8_t) *name_length == 192)
 	{
 		//fprintf(stderr, "Dns: IF\n");
@@ -158,16 +165,26 @@ uint16_t get_offset_to_skip_queries(char* dns_queries, uint16_t total_queries)
 	return (offset +1);
 }
 
+uint16_t get_offset_to_skip_rr_name(char* dns_queries, unsigned int data_offset)
+{
+	//fprintf(stderr, "Dns: dns_queries[data_offset] = %d | %d\n", (uint8_t) dns_queries[data_offset], C0);
+	while ((uint8_t) dns_queries[data_offset] != C0)
+	{
+		data_offset++;
+	}
+	return (data_offset + 2);
+}
+
 void get_rr_type(char* dns_data, unsigned int data_offset, uint16_t* rr_type)
 {
 	memset(rr_type, 0, sizeof(uint16_t));
-	memcpy(rr_type, (dns_data + data_offset + 2), sizeof(uint16_t));
+	memcpy(rr_type, (dns_data + data_offset), sizeof(uint16_t));
 	*rr_type = ntohs(*rr_type);
 }
 
 void get_rr_data_length(char* dns_data, unsigned int data_offset, uint16_t* rr_data_length)
 {
 	memset(rr_data_length, 0, sizeof(uint16_t));
-	memcpy(rr_data_length, (dns_data + data_offset + 10), sizeof(uint16_t));
+	memcpy(rr_data_length, (dns_data + data_offset + 8), sizeof(uint16_t));
 	*rr_data_length = ntohs(*rr_data_length);
 }

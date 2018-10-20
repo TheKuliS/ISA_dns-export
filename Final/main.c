@@ -152,8 +152,9 @@ int main(int argc, char** argv)
 	while (1)
 	{
 		unsigned long bytes_received = receive_packet(buffer, BUFFER_SIZE, connection_socket);
-		char* domain_name = malloc(sizeof(char) * 50);
-		char* cname = malloc(sizeof(char) * 50);
+		unsigned int max_len = 20;
+		char* domain_name = malloc(sizeof(char) * max_len);
+		char* answer_data = malloc(sizeof(char) * max_len);
 		uint16_t offset = 0;
 		uint16_t rr_type;
 		uint16_t rr_data_length;
@@ -163,39 +164,39 @@ int main(int argc, char** argv)
 			exit(EXIT_FAILURE);
 		}
 
-		if(ntohs(udp_header->source) == DNS_PORT || ntohs(udp_header->source) == 5353)
+		if (answer_data == NULL)
+		{
+			exit(EXIT_FAILURE);
+		}
+
+		if(ntohs(udp_header->source) == DNS_PORT)
 		{
 			//print_ethernet_header(ethernet_header);
 			//print_ip_header(ip_header);
-			fprintf(stdout , "Main: \t|-Identification : %d\n",ntohs(ip_header->id));
 			//print_udp_header(udp_header);
-			//print_dns_header(dns_header);
-			//printf("size of dns_hdr: %i\tsize of dns_header: %i\tsize of dns_data: %i\n", sizeof(struct dns_hdr), sizeof(dns_header),
-			  //    sizeof(dns_data));
-			fprintf(stdout, "Main: \t|-Total questions : %hu\n", ntohs(dns_header->total_questions));
-			fprintf(stdout, "Main: \t|-Total answer RRs : %hu\n", ntohs(dns_header->total_answer_RRs));
+			print_dns_header(dns_header);
 			//fprintf(stderr, "Main: data offset: %u\n", offset);
 			offset = get_offset_to_skip_queries(dns_data, ntohs(dns_header->total_questions));
 			fprintf(stderr, "Main: skip query offset: %u\n", offset);
 			for (int i = 0; i < ntohs(dns_header->total_answer_RRs); i++) {
-				get_domain_name(dns_data, offset, &domain_name, 0, 50);
+				get_domain_name(dns_data, offset, &domain_name, 0, max_len);
+				offset = get_offset_to_skip_rr_name(dns_data, offset);
 				get_rr_type(dns_data, offset, &rr_type);
 				get_rr_data_length(dns_data, offset, &rr_data_length);
-				process_rr_data(dns_data, (offset + 12), rr_type, rr_data_length, &cname, 0, 50);
-				offset += rr_data_length + 12;
+				process_rr_data(dns_data, (offset + 10), rr_type, rr_data_length, &answer_data, 0, max_len);
+				offset += rr_data_length + 10;
 
 				fprintf(stderr, "Main: answer index: %d\n", i);
 				fprintf(stderr, "Main: data offset: %u\n", offset);
 				fprintf(stderr, "Main: RR type: %d\n", rr_type);
 				fprintf(stderr, "Main: RR data length: %d\n", rr_data_length);
 				fprintf(stderr, "Main: Domain name: %s\n", domain_name);
+				fprintf(stderr, "_____________________________\n");
 			}
-
-
-
-			free(domain_name);
+			fprintf(stderr, "_____________________________//\n");
 		}
-
+		free(cname);
+		free(domain_name);
 	}
 
 	close(connection_socket);
