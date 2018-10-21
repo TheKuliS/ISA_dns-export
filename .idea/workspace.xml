@@ -10,11 +10,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="70f5ca2e-5881-4be9-a172-3ea38472620d" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/Final/hash_table.c" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Final/hash_table.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Final/dns-export" beforeDir="false" afterPath="$PROJECT_DIR$/Final/dns-export" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Final/dns.c" beforeDir="false" afterPath="$PROJECT_DIR$/Final/dns.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Final/dns.h" beforeDir="false" afterPath="$PROJECT_DIR$/Final/dns.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Final/main.c" beforeDir="false" afterPath="$PROJECT_DIR$/Final/main.c" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -26,38 +24,38 @@
     <session id="1652863975">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="14" />
+          <entry key="project.closed" value="16" />
           <entry key="project.open.time.3" value="1" />
           <entry key="project.open.time.5" value="1" />
           <entry key="project.open.time.6" value="3" />
-          <entry key="project.open.time.7" value="8" />
+          <entry key="project.open.time.7" value="10" />
           <entry key="project.open.time.8" value="2" />
-          <entry key="project.opened" value="15" />
+          <entry key="project.opened" value="17" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
         <counts>
-          <entry key="c" value="7" />
-          <entry key="h" value="8" />
+          <entry key="c" value="9" />
+          <entry key="h" value="9" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.open">
         <counts>
-          <entry key="ObjectiveC" value="15" />
+          <entry key="ObjectiveC" value="18" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
           <entry key="c" value="6523" />
-          <entry key="h" value="1466" />
-          <entry key="txt" value="209" />
+          <entry key="h" value="1897" />
+          <entry key="txt" value="243" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.cidr.testingFrameworks.usages" />
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="ObjectiveC" value="7989" />
-          <entry key="PLAIN_TEXT" value="209" />
+          <entry key="ObjectiveC" value="8420" />
+          <entry key="PLAIN_TEXT" value="243" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.vcs.git.usages" />
@@ -68,17 +66,26 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Final/main.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state>
+            <state relative-caret-position="350">
               <caret line="166" column="23" selection-start-line="166" selection-start-column="23" selection-end-line="166" selection-end-column="23" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/Final/dns.c">
+        <entry file="file://$PROJECT_DIR$/Final/hash_table.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="42">
-              <caret line="36" column="124" selection-start-line="36" selection-start-column="113" selection-end-line="36" selection-end-column="124" />
+            <state relative-caret-position="252">
+              <caret line="18" column="4" selection-start-line="18" selection-start-column="4" selection-end-line="18" selection-end-column="4" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Final/hash_table.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state>
+              <caret selection-end-line="18" selection-end-column="4" />
             </state>
           </provider>
         </entry>
@@ -86,7 +93,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Final/dns.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="126">
+            <state relative-caret-position="224">
               <caret line="16" column="15" selection-start-line="16" selection-start-column="15" selection-end-line="16" selection-end-column="15" />
             </state>
           </provider>
@@ -95,8 +102,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Final/communication.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-336">
-              <caret line="38" column="53" selection-start-line="38" selection-start-column="53" selection-end-line="38" selection-end-column="53" />
+            <state>
+              <caret selection-end-line="2" selection-end-column="12" />
             </state>
           </provider>
         </entry>
@@ -162,6 +169,8 @@
         <option value="$PROJECT_DIR$/Final/dns.h" />
         <option value="$PROJECT_DIR$/Final/dns.c" />
         <option value="$PROJECT_DIR$/Final/main.c" />
+        <option value="$PROJECT_DIR$/Final/hash_table.h" />
+        <option value="$PROJECT_DIR$/Final/hash_table.c" />
       </list>
     </option>
   </component>
@@ -261,7 +270,9 @@
       <workItem from="1539783687035" duration="16634000" />
       <workItem from="1539865902747" duration="9151000" />
       <workItem from="1539935933514" duration="983000" />
-      <workItem from="1540057510865" duration="4742000" />
+      <workItem from="1540057510865" duration="4788000" />
+      <workItem from="1540118905948" duration="1198000" />
+      <workItem from="1540134860196" duration="1648000" />
     </task>
     <task id="LOCAL-00001" summary="Creating socket">
       <created>1539031616824</created>
@@ -291,17 +302,24 @@
       <option name="project" value="LOCAL" />
       <updated>1539821489104</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Can process IPv4, IPv6, CNAME">
+      <created>1540062440720</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1540062440720</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="110774000" />
+    <option name="totallyTimeSpent" value="113666000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.1624161" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.16644295" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -333,10 +351,25 @@
     <MESSAGE value="Receiving packets, can filter DNS" />
     <MESSAGE value="Implementation of get_domain_name in dns.c" />
     <MESSAGE value="Skipping queries, can process domain name from multiple answers, start of processing rData depending on rType." />
-    <option name="LAST_COMMIT_MESSAGE" value="Skipping queries, can process domain name from multiple answers, start of processing rData depending on rType." />
+    <MESSAGE value="Can process IPv4, IPv6, CNAME" />
+    <option name="LAST_COMMIT_MESSAGE" value="Can process IPv4, IPv6, CNAME" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://E:/FIT_VUT/4th_semester/IPK/project1/final/ipk-client.c" />
+    <entry file="file://$PROJECT_DIR$/Final/dns.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="504">
+          <caret line="36" column="124" selection-start-line="36" selection-start-column="113" selection-end-line="36" selection-end-column="124" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Final/dns.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="224">
+          <caret line="16" column="15" selection-start-line="16" selection-start-column="15" selection-end-line="16" selection-end-column="15" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/Final/communication.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="210">
@@ -368,31 +401,34 @@
     <entry file="file://$PROJECT_DIR$/../../xkulda01/dhcp.h">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/Final/dns.h">
+    <entry file="file://$USER_HOME$/Desktop/c016/c016-test.c">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Final/main.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="126">
-          <caret line="16" column="15" selection-start-line="16" selection-start-column="15" selection-end-line="16" selection-end-column="15" />
+        <state relative-caret-position="350">
+          <caret line="166" column="23" selection-start-line="166" selection-start-column="23" selection-end-line="166" selection-end-column="23" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/Final/communication.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-336">
-          <caret line="38" column="53" selection-start-line="38" selection-start-column="53" selection-end-line="38" selection-end-column="53" />
+        <state>
+          <caret selection-end-line="2" selection-end-column="12" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Final/main.c">
+    <entry file="file://$PROJECT_DIR$/Final/hash_table.h">
       <provider selected="true" editor-type-id="text-editor">
         <state>
-          <caret line="166" column="23" selection-start-line="166" selection-start-column="23" selection-end-line="166" selection-end-column="23" />
+          <caret selection-end-line="18" selection-end-column="4" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Final/dns.c">
+    <entry file="file://$PROJECT_DIR$/Final/hash_table.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="42">
-          <caret line="36" column="124" selection-start-line="36" selection-start-column="113" selection-end-line="36" selection-end-column="124" />
+        <state relative-caret-position="252">
+          <caret line="18" column="4" selection-start-line="18" selection-start-column="4" selection-end-line="18" selection-end-column="4" />
         </state>
       </provider>
     </entry>
