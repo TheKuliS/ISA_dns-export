@@ -18,6 +18,9 @@
 **
 ***/
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "hash_table.h"
 int HTSIZE = MAX_HTSIZE;
 
@@ -43,7 +46,7 @@ int hashCode ( tKey key ) {
 
 void htInit ( tHTable* ptrht ) {
 
-	for (unsigned int i = 0; i < HTSIZE; i++) {
+	for (int i = 0; i < HTSIZE; i++) {
 		(*ptrht)[i] = NULL;
 	}
 }
@@ -64,7 +67,8 @@ tHTItem* htSearch ( tHTable* ptrht, tKey key ) {
 		tHTItem *hledany = (*ptrht)[hashCode(key)]; // Pomocná proměnná pro hledaný prvek.
 
 		while (hledany != NULL) { // Dokud máme co hledat
-			if (hledany->key == key) { // Pokud se shodují
+			//if (hledany->key == key) { // Pokud se shodují
+			if (strcmp(hledany->key, key) == 0) { // Pokud se shodují
 				return hledany; // Vracím ukazatel na daný prvek.
 			}
 			else {
@@ -99,6 +103,7 @@ void htInsert ( tHTable* ptrht, tKey key, tData data ) {
 				(*ptrht)[index]->key = key;
 				(*ptrht)[index]->data = data;
 				(*ptrht)[index]->ptrnext = NULL;
+				//fprintf(stderr, "Hash_table: New item | Count: %d\n", (*ptrht)[index]->data);
 			}
 			else { // Je zde nějaké synonymum.
 				vyhledany = malloc(sizeof(struct tHTItem));
@@ -106,11 +111,14 @@ void htInsert ( tHTable* ptrht, tKey key, tData data ) {
 				vyhledany->data = data;
 				vyhledany->ptrnext = (*ptrht)[index];
 				(*ptrht)[index] = vyhledany;
+				//fprintf(stderr, "Hash_table: Synonym | Count: %d\n", (*ptrht)[index]->data);
 			}
 		}
 		else { // Prvek již existuje.
-			if (vyhledany->key == key) { // Pokud se shodují
+			//if (vyhledany->key == key) { // Pokud se shodují
+			if (strcmp(vyhledany->key, key) == 0) { // Pokud se shodují
 				vyhledany->data = data; // Přepíšeme data.
+				//fprintf(stderr, "Hash_table: Exists | Count: %d\n", vyhledany->data);
 			}
 		}
 	}
@@ -157,7 +165,8 @@ void htDelete ( tHTable* ptrht, tKey key ) {
 		tHTItem *predchozi = NULL;
 
 		while (mazany != NULL) { // Dokud máme co procházet.
-			if (mazany->key == key) { // Pokud jsme našli položku s uvedeným klíčem.
+			//if (mazany->key == key) { // Pokud jsme našli položku s uvedeným klíčem.
+			if (strcmp(mazany->key, key) == 0) { // Pokud se shodují
 				if (predchozi != NULL) { // Pokud jsme se ještě nedostali na konec.
 					predchozi->ptrnext = mazany->ptrnext;
 				}
@@ -184,7 +193,7 @@ void htDelete ( tHTable* ptrht, tKey key ) {
 void htClearAll ( tHTable* ptrht ) {
 
 	tHTItem *ruseny = NULL;
-	for (unsigned int i = 0; i < HTSIZE; i++) {
+	for (int i = 0; i < HTSIZE; i++) {
 		while ((*ptrht)[i] != NULL) { // Dokud máme co zrušit.
 			ruseny = (*ptrht)[i];
 			if(ruseny->ptrnext != NULL) { // Pokud nejsme na posledním.
@@ -198,4 +207,34 @@ void htClearAll ( tHTable* ptrht ) {
 		} // Pak už jen uvedeme do původního stavu.
 		(*ptrht)[i] = NULL;
 	}
+}
+
+void ht_process_rr(tHTable* ptrht, char* rr_string)
+{
+	tHTItem* rr_item;
+
+	rr_item = htSearch(ptrht, rr_string);
+
+	if (rr_item == NULL)
+		htInsert(ptrht, rr_string, 1);
+	else
+		rr_item->data++;
+}
+
+void ht_foreach(tHTable* ptrht, void (*item_callback)(tHTItem* item))
+{
+	for(int i = 0; i < HTSIZE; i++)
+	{
+		tHTItem* processed_item = (*ptrht)[i];
+		while (processed_item != NULL)
+		{
+			item_callback(processed_item);
+			processed_item = processed_item->ptrnext;
+		}
+	}
+}
+
+void ht_print_item(tHTItem* item)
+{
+	fprintf(stdout, "%s %d\n", item->key, item->data);
 }

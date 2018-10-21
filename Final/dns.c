@@ -34,51 +34,56 @@ void debug_data_print(unsigned char *data)
 }
 
 
-void process_rr_data(char* dns_data, unsigned int data_offset, uint16_t rr_type, uint16_t rr_data_length, char** answer_data, unsigned int index, unsigned int max_len)
+void process_rr_data(char* dns_data, unsigned int data_offset, uint16_t rr_type, uint16_t rr_data_length, char** answer_data, char** answer_type, unsigned int max_len)
 {
 	//debug_data_print(dns_data);
 	if (rr_type == A)
 	{
+		strcpy(*answer_type, " A ");
 		inet_ntop(AF_INET, (dns_data + data_offset), *answer_data, INET_ADDRSTRLEN);
-		fprintf(stderr, "Dns: IPv4: %s\n", *answer_data);
+		strcat(*answer_type, *answer_data);
 	}
 	else if (rr_type == AAAA)
 	{
+		strcpy(*answer_type, " AAAA ");
 		inet_ntop(AF_INET6, (dns_data + data_offset), *answer_data, INET6_ADDRSTRLEN);
-		fprintf(stderr, "Dns: IPv6: %s\n", *answer_data);
+		strcat(*answer_type, *answer_data);
 	}
 	else if (rr_type == NS)
 	{
-
+		strcpy(*answer_type, " NS ");
+		get_domain_name(dns_data, data_offset, answer_data, 0, max_len);
+		strcat(*answer_type, *answer_data);
 	}
 	else if (rr_type == CNAME)
 	{
-		get_domain_name(dns_data, data_offset, answer_data, index, max_len);
-		fprintf(stderr, "Dns: cname: %s\n", *answer_data);
+		strcpy(*answer_type, " CNAME ");
+		get_domain_name(dns_data, data_offset, answer_data, 0, max_len);
+		strcat(*answer_type, *answer_data);
 	}
 	else if (rr_type == SOA)
 	{
-
+		strcpy(*answer_type, " SOA ");
 	}
 	else if (rr_type == MX)
 	{
-
+		strcpy(*answer_type, " MX ");
 	}
 	else if (rr_type == TXT)
 	{
-
+		strcpy(*answer_type, " TXT ");
 	}
 	else if (rr_type == SPF)
 	{
-
+		strcpy(*answer_type, " SPF ");
 	}
 	else if (rr_type == DNSSECA)
 	{
-
+		strcpy(*answer_type, " DNSSEC ");
 	}
 	else if (rr_type == DNSSECV)
 	{
-
+		strcpy(*answer_type, " DNSSEC ");
 	}
 }
 
@@ -94,7 +99,7 @@ void print_dns_header(struct dns_hdr* dns_header)
 
 void get_domain_name(char* dns_data, unsigned int data_offset, char** domain_name, unsigned int index, unsigned int max_len)
 {
-	uint8_t* name_length = dns_data + data_offset; // String length
+	uint8_t* name_length = (uint8_t*) dns_data + data_offset; // String length
 	uint8_t new_offset = *name_length + data_offset + 1; // Offset that will move over processed string
 
 	//fprintf(stderr, "Dns: data offset: %u\n", data_offset);
@@ -102,56 +107,59 @@ void get_domain_name(char* dns_data, unsigned int data_offset, char** domain_nam
 	//debug_data_print(dns_data);
 	//debug_data_print(name_length);
 
-	if ((index + *name_length) >= max_len)
+	//fprintf(stderr, "*name_length = %d\n", (uint8_t) *name_length);
+	if ((uint8_t) *name_length == 0)
 	{
-		*domain_name = realloc(*domain_name, sizeof(char) * (max_len + 20));
-
-		if (domain_name == NULL)
-		{
-			free(*domain_name);
-			exit(EXIT_FAILURE);
-		}
-
-		max_len += 20;
-		fprintf(stderr, "Dns: new max_len: %u\n", max_len);
+		//fprintf(stderr, "DOMAIN NAME END\n");
+		(*domain_name)[index - 1] = '\0';
+		return;
 	}
 
-	//fprintf(stderr, "*name_length = %d\n", (uint8_t) *name_length);
+
 	if ((uint8_t) *name_length == 192)
 	{
 		//fprintf(stderr, "Dns: IF\n");
 		new_offset = dns_data[data_offset + 1] - 12;
 		//fprintf(stderr, "Dns: new data offset: %u\n", new_offset);
 		get_domain_name(dns_data, new_offset, domain_name, index, max_len);
+		return;
 	}
-	else
+
+	if ((index + *name_length + 1) >= max_len)
 	{
-		//fprintf(stderr, "Dns: ELSE\n");
-		for (int i = 0; i <= *name_length; i++)
-		{
-			//fprintf(stderr, "Dns: i: %i | index + i: %i | data_offset + i + 1: %i\n", i, (index + i), (data_offset + i + 1));
-			if (i == *name_length)
-			{
-				if(dns_data[data_offset + i + 1] == '\0')
-					(*domain_name)[index + i] = '\0';
-				else
-					(*domain_name)[index + i] = '.';
-			}
-			else
-			{
-				(*domain_name)[index + i] = dns_data[data_offset + i + 1];
-			}
-		}
+		//fprintf(stderr, "*name_length = %d\n", *name_length);
+		//fprintf(stderr, "index = %d\n", index);
+		//fprintf(stderr, "index + *name_length = %d >= %d\n", (index + *name_length + 1), max_len);
+		max_len += 40;
+		//fprintf(stderr, "Dns: new max_len: %u\n", max_len);
+		(*domain_name) = realloc((*domain_name), sizeof(char) * max_len);
 
-		//fprintf(stderr, "Dns: part of query name: %s\n", *query_name);
-		index = index + *name_length + 1;
-		//fprintf(stderr, "Dns: new index: %u\n", index);
-
-		if ((*domain_name)[index-1] != '\0')
+		if ((*domain_name) == NULL)
 		{
-			get_domain_name(dns_data, new_offset, domain_name, index, max_len);
+			//fprintf(stderr, "Dns: REALLOC FAIL!!!\n");
+			exit(EXIT_FAILURE);
 		}
 	}
+
+	//fprintf(stderr, "Dns: ELSE\n");
+	for (int i = 0; i <= *name_length; i++)
+	{
+		//fprintf(stderr, "Dns: i: %i | index + i: %i | data_offset + i + 1: %i\n", i, (index + i), (data_offset + i + 1));
+		if (i == *name_length)
+		{
+			(*domain_name)[index + i] = '.';
+		}
+		else
+		{
+			(*domain_name)[index + i] = dns_data[data_offset + i + 1];
+		}
+	}
+
+	//fprintf(stderr, "Dns: part of query name: %s\n", *query_name);
+	index = index + *name_length + 1;
+	//fprintf(stderr, "Dns: new index: %u\n", index);
+	get_domain_name(dns_data, new_offset, domain_name, index, max_len);
+	return;
 }
 
 uint16_t get_offset_to_skip_queries(char* dns_queries, uint16_t total_queries)

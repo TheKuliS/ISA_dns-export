@@ -21,8 +21,10 @@
 #ifndef ISA_HASH_TABLE_H
 #define ISA_HASH_TABLE_H
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 
 // Maximum size of hash table
 #define MAX_HTSIZE 101
@@ -31,7 +33,7 @@
 typedef char* tKey;
 
 /* typ obsahu (například cena zboží) */
-typedef float tData;
+typedef int tData;
 
 /*Datová položka TRP s explicitně řetězenými synonymy*/
 typedef struct tHTItem{
@@ -54,18 +56,23 @@ typedef tHTItem* tHTable[MAX_HTSIZE];
 
 /* Hlavičky řešených procedur a funkcí. */
 
-int hashCode ( tKey key );
+int hashCode(tKey key);
 
-void htInit ( tHTable* ptrht );
+void htInit(tHTable* ptrht);
 
-tHTItem* htSearch ( tHTable* ptrht, tKey key );
+tHTItem* htSearch(tHTable* ptrht, tKey key);
 
-void htInsert ( tHTable* ptrht, tKey key, tData data );
+void htInsert(tHTable* ptrht, tKey key, tData data);
 
-tData* htRead ( tHTable* ptrht, tKey key );
+tData* htRead(tHTable* ptrht, tKey key);
 
-void htDelete ( tHTable* ptrht, tKey key );
+void htDelete(tHTable* ptrht, tKey key);
 
-void htClearAll ( tHTable* ptrht );
+void htClearAll(tHTable* ptrht);
 
+void ht_process_rr(tHTable* ptrht, char* rr_string);
+
+void ht_foreach(tHTable* ptrht, void (*item_callback)(tHTItem* item));
+
+void ht_print_item(tHTItem* item);
 #endif //ISA_HASH_TABLE_H
