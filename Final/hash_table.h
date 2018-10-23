@@ -75,4 +75,5 @@ void ht_process_rr(tHTable* ptrht, char* rr_string);
 void ht_foreach(tHTable* ptrht, void (*item_callback)(tHTItem* item));
 
 void ht_print_item(tHTItem* item);
+
 #endif //ISA_HASH_TABLE_H

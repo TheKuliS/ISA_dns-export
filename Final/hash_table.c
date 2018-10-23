@@ -59,16 +59,20 @@ void htInit ( tHTable* ptrht ) {
 */
 
 tHTItem* htSearch ( tHTable* ptrht, tKey key ) {
-
+	//fprintf(stderr, "Hash_table: htSearch start\n");
+	//fprintf(stderr, "Hash_table: htSearch key: %s\n", key);
 	if (*ptrht == NULL || (*ptrht)[hashCode(key)] == NULL) { // Pokud nebyla tabulka inicialzována, nebo pokud hledaný prvek v tabulce není.
 		return NULL;
 	}
 	else {
 		tHTItem *hledany = (*ptrht)[hashCode(key)]; // Pomocná proměnná pro hledaný prvek.
-
+		fprintf(stderr, "Hash_table: htSearch hashCode: %d of key: %s\n", hashCode(key), key);
+		fprintf(stderr, "Hash_table: htSearch hledany: %s | %d\n", hledany->key, hledany->data);
 		while (hledany != NULL) { // Dokud máme co hledat
 			//if (hledany->key == key) { // Pokud se shodují
 			if (strcmp(hledany->key, key) == 0) { // Pokud se shodují
+				fprintf(stderr, "Hash_table: htSearch hledany->key: %s\n", hledany->key);
+				fprintf(stderr, "Hash_table: htSearch key: %s\n", key);
 				return hledany; // Vracím ukazatel na daný prvek.
 			}
 			else {
@@ -92,10 +96,12 @@ tHTItem* htSearch ( tHTable* ptrht, tKey key ) {
 **/
 
 void htInsert ( tHTable* ptrht, tKey key, tData data ) {
-
+	//fprintf(stderr, "Hash_table: htInsert start\n");
+	fprintf(stderr, "Hash_table: htInsert key: %s\n", key);
 	if (*ptrht != NULL) {
 		tHTItem *vyhledany = htSearch(ptrht, key); // Vyhledání prvku.
 		unsigned int index = hashCode(key); // Index klíče
+		fprintf(stderr, "Hash_table: htInsert hashCode: %d of key: %s\n", hashCode(key), key);
 
 		if (vyhledany == NULL) { // Prvek ještě neexistuje.
 			if ((*ptrht)[index] == NULL) { // Je prázdný.
@@ -103,7 +109,7 @@ void htInsert ( tHTable* ptrht, tKey key, tData data ) {
 				(*ptrht)[index]->key = key;
 				(*ptrht)[index]->data = data;
 				(*ptrht)[index]->ptrnext = NULL;
-				//fprintf(stderr, "Hash_table: New item | Count: %d\n", (*ptrht)[index]->data);
+				fprintf(stderr, "Hash_table: New item: %s | Count: %d\n", (*ptrht)[index]->key, (*ptrht)[index]->data);
 			}
 			else { // Je zde nějaké synonymum.
 				vyhledany = malloc(sizeof(struct tHTItem));
@@ -111,14 +117,14 @@ void htInsert ( tHTable* ptrht, tKey key, tData data ) {
 				vyhledany->data = data;
 				vyhledany->ptrnext = (*ptrht)[index];
 				(*ptrht)[index] = vyhledany;
-				//fprintf(stderr, "Hash_table: Synonym | Count: %d\n", (*ptrht)[index]->data);
+				fprintf(stderr, "Hash_table: Synonym %s | Count: %d\n", (*ptrht)[index]->key, (*ptrht)[index]->data);
 			}
 		}
 		else { // Prvek již existuje.
 			//if (vyhledany->key == key) { // Pokud se shodují
 			if (strcmp(vyhledany->key, key) == 0) { // Pokud se shodují
 				vyhledany->data = data; // Přepíšeme data.
-				//fprintf(stderr, "Hash_table: Exists | Count: %d\n", vyhledany->data);
+				fprintf(stderr, "Hash_table: Exists %s | Count: %d\n", (*ptrht)[index]->key,  vyhledany->data);
 			}
 		}
 	}
@@ -211,30 +217,46 @@ void htClearAll ( tHTable* ptrht ) {
 
 void ht_process_rr(tHTable* ptrht, char* rr_string)
 {
+	fprintf(stderr, "Hash_table: ht_process_rr start\n");
 	tHTItem* rr_item;
 
 	rr_item = htSearch(ptrht, rr_string);
 
 	if (rr_item == NULL)
+	{
+		//fprintf(stderr, "Hash_table: ht_process_rr new item: %s\n", rr_string);
 		htInsert(ptrht, rr_string, 1);
+	}
 	else
-		rr_item->data++;
+	{
+		//fprintf(stderr, "Hash_table: ht_process_rr update item: %s\n", rr_string);
+		rr_item->data = rr_item->data + 1;
+		//htInsert(ptrht, rr_string, rr_item->data + 1);
+		fprintf(stderr, "Hash_table: ht_process_rr rr_item->data: %d\n", rr_item->data);
+	}
+
 }
 
 void ht_foreach(tHTable* ptrht, void (*item_callback)(tHTItem* item))
 {
+	fprintf(stderr, "_______________Hash Table_______________\n");
 	for(int i = 0; i < HTSIZE; i++)
 	{
+		//fprintf(stderr, "Hash_table: ht_foreach: %d\n", i);
 		tHTItem* processed_item = (*ptrht)[i];
+		int j = 0;
 		while (processed_item != NULL)
 		{
 			item_callback(processed_item);
 			processed_item = processed_item->ptrnext;
+			j++;
+			//fprintf(stderr, "Hash_table: ht_foreach: %d\n", j);
 		}
 	}
+	fprintf(stderr, "__________________End__________________\n");
 }
 
 void ht_print_item(tHTItem* item)
 {
-	fprintf(stdout, "%s %d\n", item->key, item->data);
+	fprintf(stderr, "%s (%p) %d\n", item->key, item->key, item->data);
 }
