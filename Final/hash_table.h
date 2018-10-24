@@ -27,7 +27,7 @@
 
 
 // Maximum size of hash table
-#define MAX_HTSIZE 101
+#define MAX_HTSIZE 499
 
 /* typ klíče (například identifikace zboží) */
 typedef char* tKey;

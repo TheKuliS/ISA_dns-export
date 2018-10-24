@@ -115,7 +115,6 @@ int main(int argc, char** argv)
 
 	// Socket variables
 	int connection_socket; // Listening socket number
-	unsigned int max_len = 40; // Max length of string
 	//int sock_opt = 1;
 	//struct ifreq if_id;
 	//struct ifreq if_mac;
@@ -191,9 +190,6 @@ int main(int argc, char** argv)
 	{
 		//memset(buffer, 0, BUFFER_SIZE);
 		unsigned long bytes_received = receive_packet(buffer, BUFFER_SIZE, connection_socket);
-		domain_name = malloc(sizeof(char) * (5 * max_len));
-		answer_data = malloc(sizeof(char) * (2 * max_len));
-		answer_type = malloc(sizeof(char) * max_len);
 		//memset(domain_name, 0, max_len);
 		//memset(answer_data, 0, max_len);
 		//memset(answer_type, 0, max_len);
@@ -201,48 +197,36 @@ int main(int argc, char** argv)
 		uint16_t rr_type; // Type of resource record
 		uint16_t rr_data_length; // Data length of specific resource record
 
-		if (domain_name == NULL)
-		{
-			free(rr_table);
-			free(domain_name);
-			free(answer_type);
-			free(answer_data);
-			exit(EXIT_FAILURE);
-		}
-
-		if (answer_data == NULL)
-		{
-			free(rr_table);
-			free(domain_name);
-			free(answer_type);
-			free(answer_data);
-			exit(EXIT_FAILURE);
-		}
-
-		if (answer_type == NULL)
-		{
-			free(rr_table);
-			free(domain_name);
-			free(answer_type);
-			free(answer_data);
-			exit(EXIT_FAILURE);
-		}
 		//print_ip_header(ip_header);
 
 		if(ntohs(udp_header->source) == DNS_PORT) // Filter incoming packets only on DNS port
 		{
 			//print_ethernet_header(ethernet_header);
 			//print_udp_header(udp_header);
-			print_dns_header(dns_header);
+			//print_dns_header(dns_header);
 			//fprintf(stderr, "Main: data offset: %u\n", offset);
 			offset = get_offset_to_skip_queries(dns_data, ntohs(dns_header->total_questions)); // Offset will point over the question data
 			//fprintf(stderr, "Main: skipped header offset: %u\n", offset);
 			//fprintf(stderr, "Main: skip query offset: %u\n", offset);
 			//fprintf(stderr, "Main: answer + authority: %d\n", (ntohs(dns_header->total_answer_RRs) + ntohs(dns_header->total_authority_RRs)));
 			for (int i = 0; i < (ntohs(dns_header->total_answer_RRs) + ntohs(dns_header->total_authority_RRs)); i++) {
-				fprintf(stderr, "Main: answer index: %d\n", i);
+				domain_name = malloc(sizeof(char) * 200);
+				answer_data = malloc(sizeof(char) * 100);
+				answer_type = malloc(sizeof(char) * 100);
+
+				if (domain_name == NULL || answer_data == NULL || answer_type == NULL)
+				{
+					free(answer_data);
+					free(answer_type);
+					free(domain_name);
+					free(rr_table);
+					close(connection_socket);
+					exit(EXIT_FAILURE);
+				}
+
+				//fprintf(stderr, "Main: answer index: %d\n", i);
 				//fprintf(stderr, "before domain_name: %p\n", domain_name);
-				get_domain_name(dns_data, offset, &domain_name, 0, max_len); // Get domain name of i-answer
+				get_domain_name(dns_data, offset, &domain_name, 0, 200); // Get domain name of i-answer
 				//ht_foreach(rr_table, ht_print_item);
 				//fprintf(stderr, "Main: Domain name: %s | %d\n", domain_name, strlen(domain_name));
 				//fprintf(stderr, "after domain_name: %p\n", domain_name);
@@ -253,25 +237,24 @@ int main(int argc, char** argv)
 				//fprintf(stderr, "Main: RR type: %d\n", rr_type);
 				get_rr_data_length(dns_data, offset, &rr_data_length); // Get data length of i-answer
 				//fprintf(stderr, "Main: RR data length: %d\n", rr_data_length);
-				process_rr_data(dns_data, (offset + 10), rr_type, rr_data_length, &answer_data, &answer_type, max_len); // Process specific data of i-answer
+				process_rr_data(dns_data, (offset + 10), rr_type, rr_data_length, &answer_data, &answer_type, 100); // Process specific data of i-answer
 				offset += rr_data_length + 10; // Get offset to point to next answer
 				//fprintf(stderr, "Main: skipped answer offset: %u\n", offset);
 				sprintf(domain_name, "%s %s %s", domain_name, answer_type, answer_data);
-				fprintf(stderr, "Main: Answer: %s | %d\n", domain_name, strlen(domain_name));
-				ht_process_rr(rr_table, domain_name);
+				//fprintf(stderr, "Main: Answer: %s | %d\n", domain_name, strlen(domain_name));
+				if (rr_type == A || rr_type == AAAA || rr_type == NS || rr_type == CNAME || rr_type == SOA || rr_type == MX || rr_type == TXT || rr_type == SPF
+				|| rr_type == DNSSECA || rr_type == DNSSECV)
+				{
+					ht_process_rr(rr_table, domain_name);
+				}
 				//ht_foreach(rr_table, ht_print_item);
 
 
-				fprintf(stderr, "_____________________________\n");
+				//fprintf(stderr, "_____________________________\n");
 			}
-			fprintf(stderr, "_____________________________//\n");
+			//fprintf(stderr, "_____________________________//\n");
 		}
-		fprintf(stderr, "\n");
 	}
-	free(answer_data);
-	free(answer_type);
-	free(domain_name);
-	free(rr_table);
 	close(connection_socket);
 	fprintf(stdout, "Connection closed, program ended successfully.\n");
 
