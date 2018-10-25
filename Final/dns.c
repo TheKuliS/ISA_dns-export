@@ -35,52 +35,73 @@ void debug_data_print(unsigned char *data)
 }
 
 
-void process_rr_data(char* dns_data, unsigned int data_offset, uint16_t rr_type, uint16_t rr_data_length, char** answer_data, char** answer_type, unsigned int max_len)
+void process_rr_data(char* dns_data, unsigned int data_offset, uint16_t rr_type, uint16_t rr_data_length, char** answer_data,
+		char** answer_type, unsigned int max_len)
 {
 	//debug_data_print(dns_data);
 	if (rr_type == A)
 	{
 		strcpy(*answer_type, "A");
 		inet_ntop(AF_INET, (dns_data + data_offset), *answer_data, INET_ADDRSTRLEN);
-		//strcat(*answer_type, *answer_data);
 	}
 	else if (rr_type == AAAA)
 	{
 		strcpy(*answer_type, "AAAA");
-		//inet_ntop(AF_INET6, (dns_data + data_offset), *answer_data, INET6_ADDRSTRLEN);
-		//strcat(*answer_type, *answer_data);
+		inet_ntop(AF_INET6, (dns_data + data_offset), *answer_data, INET6_ADDRSTRLEN);
 	}
 	else if (rr_type == NS)
 	{
 		strcpy(*answer_type, "NS");
 		get_domain_name(dns_data, data_offset, answer_data, 0, max_len);
-		//strcat(*answer_type, *answer_data);
 	}
 	else if (rr_type == CNAME)
 	{
 		strcpy(*answer_type, "CNAME");
 		get_domain_name(dns_data, data_offset, answer_data, 0, max_len);
-		//strcat(*answer_type, *answer_data);
 	}
 	else if (rr_type == SOA)
-	{
-		strcpy(*answer_type, "SOA");
+	{/*
+		get_domain_name(dns_data, data_offset, answer_type, 0, max_len);
+		data_offset = get_offset_to_skip_rr_name(dns_data, data_offset);
 		get_domain_name(dns_data, data_offset, answer_data, 0, max_len);
-		sprintf(*answer_data, "%s %s %d %d %d %d %d", *answer_data, *answer_type, (dns_data + data_offset + ))
+		data_offset = get_offset_to_skip_rr_name(dns_data, data_offset);
+
+		sprintf(*answer_type, "SOA %s %s %d %d %d %d %d", *answer_type, *answer_data, ntohs(*((uint16_t*) (dns_data + data_offset))),
+		        ntohs(*((uint16_t*) (dns_data + data_offset + 4))), ntohs(*((uint16_t*) (dns_data + data_offset + 8))),
+		        ntohs(*((uint16_t*) (dns_data + data_offset + 12))), ntohs(*((uint16_t*) (dns_data + data_offset + 16))));
 		//strcat(*answer_type, *answer_data);
+		//memset(*answer_data, 0, max_len);*/
 	}
 	else if (rr_type == MX)
 	{
-		sprintf(*answer_type, "MX %d", *((uint16_t*) dns_data));
+		sprintf(*answer_type, "MX %d", ntohs(*((uint16_t*) (dns_data + data_offset))));
 		get_domain_name(dns_data, (data_offset + 2), answer_data, 0, max_len);
 		//strcat(*answer_type, *answer_data);
 	}
 	else if (rr_type == TXT)
 	{
-		strcpy(*answer_type, "TXT");
-		for (int i = 0; i < rr_data_length; ++i) {
-			(*answer_data)[i] = dns_data[data_offset + i];
+		if (rr_data_length >= max_len)
+		{
+			max_len += (rr_data_length + 1);
+			//fprintf(stderr, "Dns: new max_len: %u\n", max_len);
+			(*answer_data) = realloc((*answer_data), sizeof(char) * max_len);
+
+			if ((*answer_data) == NULL)
+			{
+				exit(EXIT_FAILURE);
+			}
 		}
+
+		strcpy(*answer_type, "TXT");
+		//debug_data_print(dns_data + data_offset);
+		uint8_t* text_length = (uint8_t*) dns_data + data_offset;
+		memset(*answer_data, 0, max_len);
+
+		for (int i = 0; i < *text_length; i++) {
+			(*answer_data)[i] = dns_data[data_offset + i + 1];
+			//fprintf(stderr, "%c", dns_data[data_offset + i + 1]);
+		}
+		fprintf(stderr, "\n");
 		//strcat(*answer_type, *answer_data);
 	}
 	else if (rr_type == SPF)
@@ -175,7 +196,7 @@ void get_domain_name(char* dns_data, unsigned int data_offset, char** domain_nam
 uint16_t get_offset_to_skip_queries(char* dns_queries, uint16_t total_queries)
 {
 	uint16_t offset = 0;
-	for (int i = 0; i < total_queries; ++i) {
+	for (int i = 0; i < total_queries; i++) {
 		while (dns_queries[offset] != '\0')
 			offset++;
 		offset = offset + 4;

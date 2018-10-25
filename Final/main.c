@@ -213,6 +213,9 @@ int main(int argc, char** argv)
 				domain_name = malloc(sizeof(char) * 200);
 				answer_data = malloc(sizeof(char) * 100);
 				answer_type = malloc(sizeof(char) * 100);
+				//memset(domain_name, 0, 200);
+				//memset(answer_data, 0, 100);
+				//memset(answer_type, 0, 100);
 
 				if (domain_name == NULL || answer_data == NULL || answer_type == NULL)
 				{
@@ -224,7 +227,7 @@ int main(int argc, char** argv)
 					exit(EXIT_FAILURE);
 				}
 
-				//fprintf(stderr, "Main: answer index: %d\n", i);
+				fprintf(stderr, "Main: answer index: %d\n", i);
 				//fprintf(stderr, "before domain_name: %p\n", domain_name);
 				get_domain_name(dns_data, offset, &domain_name, 0, 200); // Get domain name of i-answer
 				//ht_foreach(rr_table, ht_print_item);
@@ -232,11 +235,11 @@ int main(int argc, char** argv)
 				//fprintf(stderr, "after domain_name: %p\n", domain_name);
 
 				offset = get_offset_to_skip_rr_name(dns_data, offset); // Get over domain name of i-answer
-				//fprintf(stderr, "Main: skipped rr name offset: %u\n", offset);
+				fprintf(stderr, "Main: skipped rr name offset + 10: %u\n", offset + 10);
 				get_rr_type(dns_data, offset, &rr_type); // Get type of i-answer
 				//fprintf(stderr, "Main: RR type: %d\n", rr_type);
 				get_rr_data_length(dns_data, offset, &rr_data_length); // Get data length of i-answer
-				//fprintf(stderr, "Main: RR data length: %d\n", rr_data_length);
+				fprintf(stderr, "Main: RR data length: %d\n", rr_data_length);
 				process_rr_data(dns_data, (offset + 10), rr_type, rr_data_length, &answer_data, &answer_type, 100); // Process specific data of i-answer
 				offset += rr_data_length + 10; // Get offset to point to next answer
 				//fprintf(stderr, "Main: skipped answer offset: %u\n", offset);
