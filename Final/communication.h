@@ -6,6 +6,8 @@
 #define ISA_COMMUNICATION_H
 
 #define BUFFER_SIZE 1024
+#define TCP 6
+#define UDP 17
 
 
 unsigned short checksum(unsigned short *buf, int nwords);

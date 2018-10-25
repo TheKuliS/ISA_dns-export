@@ -230,7 +230,6 @@ int main(int argc, char** argv)
 				fprintf(stderr, "Main: answer index: %d\n", i);
 				//fprintf(stderr, "before domain_name: %p\n", domain_name);
 				get_domain_name(dns_data, offset, &domain_name, 0, 200); // Get domain name of i-answer
-				//ht_foreach(rr_table, ht_print_item);
 				//fprintf(stderr, "Main: Domain name: %s | %d\n", domain_name, strlen(domain_name));
 				//fprintf(stderr, "after domain_name: %p\n", domain_name);
 
@@ -240,17 +239,11 @@ int main(int argc, char** argv)
 				//fprintf(stderr, "Main: RR type: %d\n", rr_type);
 				get_rr_data_length(dns_data, offset, &rr_data_length); // Get data length of i-answer
 				fprintf(stderr, "Main: RR data length: %d\n", rr_data_length);
-				process_rr_data(dns_data, (offset + 10), rr_type, rr_data_length, &answer_data, &answer_type, 100); // Process specific data of i-answer
+				// Process specific data of i-answer
+				process_rr_data(dns_data, (offset + 10), rr_type, rr_data_length, &domain_name, &answer_type, &answer_data, 100, rr_table);
 				offset += rr_data_length + 10; // Get offset to point to next answer
 				//fprintf(stderr, "Main: skipped answer offset: %u\n", offset);
-				sprintf(domain_name, "%s %s %s", domain_name, answer_type, answer_data);
 				//fprintf(stderr, "Main: Answer: %s | %d\n", domain_name, strlen(domain_name));
-				if (rr_type == A || rr_type == AAAA || rr_type == NS || rr_type == CNAME || rr_type == SOA || rr_type == MX || rr_type == TXT || rr_type == SPF
-				|| rr_type == DNSSECA || rr_type == DNSSECV)
-				{
-					ht_process_rr(rr_table, domain_name);
-				}
-				//ht_foreach(rr_table, ht_print_item);
 
 
 				//fprintf(stderr, "_____________________________\n");

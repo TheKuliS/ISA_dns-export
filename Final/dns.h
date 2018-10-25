@@ -20,10 +20,15 @@
 #define SOA 6
 #define MX 15
 #define TXT 16
+#define DS 43
+#define RRSIG 46
+#define NSEC 47
+#define DNSKEY 48
 #define SPF 99
 #define DNSSECA 32768
 #define DNSSECV 32769
 
+#include "hash_table.h"
 
 struct dns_hdr
 {
@@ -35,8 +40,8 @@ struct dns_hdr
 	uint16_t total_additional_RRs;
 };
 
-void process_rr_data(char* dns_data, unsigned int data_offset, uint16_t rr_type, uint16_t rr_data_length, char** answer_data,
-		char** answer_type, unsigned int max_len);
+void process_rr_data(char* dns_data, unsigned int data_offset, uint16_t rr_type, uint16_t rr_data_length, char** domain_name,
+                     char** answer_type, char** answer_data, unsigned int max_len, tHTable* rr_table);
 void print_dns_header(struct dns_hdr* dns_header);
 void get_domain_name(char* dns_data, unsigned int data_offset, char** domain_name, unsigned int index, unsigned int max_len);
 void debug_data_print(unsigned char *data);

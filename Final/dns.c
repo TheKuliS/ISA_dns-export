@@ -35,48 +35,52 @@ void debug_data_print(unsigned char *data)
 }
 
 
-void process_rr_data(char* dns_data, unsigned int data_offset, uint16_t rr_type, uint16_t rr_data_length, char** answer_data,
-		char** answer_type, unsigned int max_len)
+void process_rr_data(char* dns_data, unsigned int data_offset, uint16_t rr_type, uint16_t rr_data_length, char** domain_name,
+                     char** answer_type, char** answer_data, unsigned int max_len, tHTable* rr_table)
 {
 	//debug_data_print(dns_data);
 	if (rr_type == A)
 	{
-		strcpy(*answer_type, "A");
 		inet_ntop(AF_INET, (dns_data + data_offset), *answer_data, INET_ADDRSTRLEN);
+		sprintf(*domain_name, "%s A %s", *domain_name, *answer_data);
+		ht_process_rr(rr_table, *domain_name);
 	}
 	else if (rr_type == AAAA)
 	{
-		strcpy(*answer_type, "AAAA");
 		inet_ntop(AF_INET6, (dns_data + data_offset), *answer_data, INET6_ADDRSTRLEN);
+		sprintf(*domain_name, "%s AAAA %s", *domain_name, *answer_data);
+		ht_process_rr(rr_table, *domain_name);
 	}
 	else if (rr_type == NS)
 	{
-		strcpy(*answer_type, "NS");
 		get_domain_name(dns_data, data_offset, answer_data, 0, max_len);
+		sprintf(*domain_name, "%s NS %s", *domain_name, *answer_data);
+		ht_process_rr(rr_table, *domain_name);
 	}
 	else if (rr_type == CNAME)
 	{
-		strcpy(*answer_type, "CNAME");
 		get_domain_name(dns_data, data_offset, answer_data, 0, max_len);
+		sprintf(*domain_name, "%s CNAME %s", *domain_name, *answer_data);
+		ht_process_rr(rr_table, *domain_name);
 	}
 	else if (rr_type == SOA)
-	{/*
+	{
 		get_domain_name(dns_data, data_offset, answer_type, 0, max_len);
 		data_offset = get_offset_to_skip_rr_name(dns_data, data_offset);
 		get_domain_name(dns_data, data_offset, answer_data, 0, max_len);
 		data_offset = get_offset_to_skip_rr_name(dns_data, data_offset);
+		debug_data_print(dns_data + data_offset);
 
-		sprintf(*answer_type, "SOA %s %s %d %d %d %d %d", *answer_type, *answer_data, ntohs(*((uint16_t*) (dns_data + data_offset))),
-		        ntohs(*((uint16_t*) (dns_data + data_offset + 4))), ntohs(*((uint16_t*) (dns_data + data_offset + 8))),
-		        ntohs(*((uint16_t*) (dns_data + data_offset + 12))), ntohs(*((uint16_t*) (dns_data + data_offset + 16))));
-		//strcat(*answer_type, *answer_data);
-		//memset(*answer_data, 0, max_len);*/
+		sprintf(*domain_name, "%s SOA \"%s %s %zu %zu %zu %zu %zu\"", *domain_name, *answer_type, *answer_data, ntohl(*((uint32_t*) (dns_data + data_offset))),
+		        ntohl(*((uint32_t*) (dns_data + data_offset + 4))), ntohl(*((uint32_t*) (dns_data + data_offset + 8))),
+		        ntohl(*((uint32_t*) (dns_data + data_offset + 12))), ntohl(*((uint32_t*) (dns_data + data_offset + 16))));
+		ht_process_rr(rr_table, *domain_name);
 	}
 	else if (rr_type == MX)
 	{
-		sprintf(*answer_type, "MX %d", ntohs(*((uint16_t*) (dns_data + data_offset))));
 		get_domain_name(dns_data, (data_offset + 2), answer_data, 0, max_len);
-		//strcat(*answer_type, *answer_data);
+		sprintf(*domain_name, "%s MX \"%d %s\"", *domain_name, ntohs(*((uint16_t*) (dns_data + data_offset))), *answer_data);
+		ht_process_rr(rr_table, *domain_name);
 	}
 	else if (rr_type == TXT)
 	{
@@ -92,7 +96,6 @@ void process_rr_data(char* dns_data, unsigned int data_offset, uint16_t rr_type,
 			}
 		}
 
-		strcpy(*answer_type, "TXT");
 		//debug_data_print(dns_data + data_offset);
 		uint8_t* text_length = (uint8_t*) dns_data + data_offset;
 		memset(*answer_data, 0, max_len);
@@ -101,20 +104,45 @@ void process_rr_data(char* dns_data, unsigned int data_offset, uint16_t rr_type,
 			(*answer_data)[i] = dns_data[data_offset + i + 1];
 			//fprintf(stderr, "%c", dns_data[data_offset + i + 1]);
 		}
-		fprintf(stderr, "\n");
-		//strcat(*answer_type, *answer_data);
+		sprintf(*domain_name, "%s TXT \"%s\"", *domain_name, *answer_data);
+		ht_process_rr(rr_table, *domain_name);
 	}
 	else if (rr_type == SPF)
 	{
-		strcpy(*answer_type, "SPF");
+		if (rr_data_length >= max_len)
+		{
+			max_len += (rr_data_length + 1);
+			//fprintf(stderr, "Dns: new max_len: %u\n", max_len);
+			(*answer_data) = realloc((*answer_data), sizeof(char) * max_len);
+
+			if ((*answer_data) == NULL)
+			{
+				exit(EXIT_FAILURE);
+			}
+		}
+
+		//debug_data_print(dns_data + data_offset);
+		uint8_t* text_length = (uint8_t*) dns_data + data_offset;
+		memset(*answer_data, 0, max_len);
+
+		for (int i = 0; i < *text_length; i++) {
+			(*answer_data)[i] = dns_data[data_offset + i + 1];
+			//fprintf(stderr, "%c", dns_data[data_offset + i + 1]);
+		}
+		sprintf(*domain_name, "%s SPF \"%s\"", *domain_name, *answer_data);
+		ht_process_rr(rr_table, *domain_name);
 	}
 	else if (rr_type == DNSSECA)
 	{
 		strcpy(*answer_type, "DNSSEC");
+		sprintf(*domain_name, "%s DNSSEC %s %s", *domain_name, *answer_type, *answer_data);
+		ht_process_rr(rr_table, *domain_name);
 	}
 	else if (rr_type == DNSSECV)
 	{
 		strcpy(*answer_type, "DNSSEC");
+		sprintf(*domain_name, "%s DNSSEC %s %s", *domain_name, *answer_type, *answer_data);
+		ht_process_rr(rr_table, *domain_name);
 	}
 }
 
