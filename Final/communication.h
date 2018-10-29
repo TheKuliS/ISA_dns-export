@@ -5,7 +5,7 @@
 #ifndef ISA_COMMUNICATION_H
 #define ISA_COMMUNICATION_H
 
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 2048
 #define TCP 6
 #define UDP 17
 

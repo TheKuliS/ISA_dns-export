@@ -4,6 +4,7 @@
 
 // reference:
 // 'http://www.networksorcery.com/enp/protocol/dns.htm#Total%20Answer%20RRs'
+// Base 64 encode decode: 'https://nachtimwald.com/2017/11/18/base64-encode-and-decode-in-c/'
 
 #ifndef ISA_DNS_H
 #define ISA_DNS_H
@@ -11,6 +12,7 @@
 // Ports
 #define DNS_PORT 53
 #define C0 192
+#define C1 193
 
 // DNS record types
 #define A 1
@@ -18,13 +20,14 @@
 #define NS 2
 #define CNAME 5
 #define SOA 6
+#define PTR 12
 #define MX 15
 #define TXT 16
 #define DS 43
 #define RRSIG 46
 #define NSEC 47
 #define DNSKEY 48
-#define SPF 99
+#define NSEC3 50
 #define DNSSECA 32768
 #define DNSSECV 32769
 
@@ -40,6 +43,9 @@ struct dns_hdr
 	uint16_t total_additional_RRs;
 };
 
+
+size_t b64_encoded_size(size_t inlen);
+void b64_encode(const unsigned char *in, char** out, size_t len);
 void process_rr_data(char* dns_data, unsigned int data_offset, uint16_t rr_type, uint16_t rr_data_length, char** domain_name,
                      char** answer_type, char** answer_data, unsigned int max_len, tHTable* rr_table);
 void print_dns_header(struct dns_hdr* dns_header);

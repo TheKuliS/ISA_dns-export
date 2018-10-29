@@ -190,6 +190,7 @@ int main(int argc, char** argv)
 	{
 		//memset(buffer, 0, BUFFER_SIZE);
 		unsigned long bytes_received = receive_packet(buffer, BUFFER_SIZE, connection_socket);
+		fprintf(stderr, "Main: Bytes received: %lu\n", bytes_received);
 		//memset(domain_name, 0, max_len);
 		//memset(answer_data, 0, max_len);
 		//memset(answer_type, 0, max_len);
@@ -199,6 +200,7 @@ int main(int argc, char** argv)
 
 		//print_ip_header(ip_header);
 
+		//UDP
 		if(ntohs(udp_header->source) == DNS_PORT) // Filter incoming packets only on DNS port
 		{
 			//print_ethernet_header(ethernet_header);
@@ -209,10 +211,10 @@ int main(int argc, char** argv)
 			//fprintf(stderr, "Main: skipped header offset: %u\n", offset);
 			//fprintf(stderr, "Main: skip query offset: %u\n", offset);
 			//fprintf(stderr, "Main: answer + authority: %d\n", (ntohs(dns_header->total_answer_RRs) + ntohs(dns_header->total_authority_RRs)));
-			for (int i = 0; i < (ntohs(dns_header->total_answer_RRs) + ntohs(dns_header->total_authority_RRs)); i++) {
-				domain_name = malloc(sizeof(char) * 200);
-				answer_data = malloc(sizeof(char) * 100);
-				answer_type = malloc(sizeof(char) * 100);
+			for (int i = 0; i < ntohs(dns_header->total_answer_RRs); i++) {
+				domain_name = malloc(sizeof(char) * 1000);
+				answer_data = malloc(sizeof(char) * 50);
+				answer_type = malloc(sizeof(char) * 50);
 				//memset(domain_name, 0, 200);
 				//memset(answer_data, 0, 100);
 				//memset(answer_type, 0, 100);
@@ -229,18 +231,20 @@ int main(int argc, char** argv)
 
 				fprintf(stderr, "Main: answer index: %d\n", i);
 				//fprintf(stderr, "before domain_name: %p\n", domain_name);
-				get_domain_name(dns_data, offset, &domain_name, 0, 200); // Get domain name of i-answer
+				//debug_data_print(dns_data + offset);
+				get_domain_name(dns_data, offset, &domain_name, 0, 1000); // Get domain name of i-answer
 				//fprintf(stderr, "Main: Domain name: %s | %d\n", domain_name, strlen(domain_name));
 				//fprintf(stderr, "after domain_name: %p\n", domain_name);
 
 				offset = get_offset_to_skip_rr_name(dns_data, offset); // Get over domain name of i-answer
-				fprintf(stderr, "Main: skipped rr name offset + 10: %u\n", offset + 10);
+				//fprintf(stderr, "Main: skipped rr name offset + 10: %u\n", offset + 10);
 				get_rr_type(dns_data, offset, &rr_type); // Get type of i-answer
 				//fprintf(stderr, "Main: RR type: %d\n", rr_type);
+				//debug_data_print(dns_data + offset);
 				get_rr_data_length(dns_data, offset, &rr_data_length); // Get data length of i-answer
 				fprintf(stderr, "Main: RR data length: %d\n", rr_data_length);
 				// Process specific data of i-answer
-				process_rr_data(dns_data, (offset + 10), rr_type, rr_data_length, &domain_name, &answer_type, &answer_data, 100, rr_table);
+				process_rr_data(dns_data, (offset + 10), rr_type, rr_data_length, &domain_name, &answer_type, &answer_data, 50, rr_table);
 				offset += rr_data_length + 10; // Get offset to point to next answer
 				//fprintf(stderr, "Main: skipped answer offset: %u\n", offset);
 				//fprintf(stderr, "Main: Answer: %s | %d\n", domain_name, strlen(domain_name));

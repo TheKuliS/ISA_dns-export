@@ -2,6 +2,10 @@
 // ISA Project - DNS export by syslog protocol
 // 8.10.2018
 
+// reference:
+// 'http://www.networksorcery.com/enp/protocol/dns.htm#Total%20Answer%20RRs'
+// Base 64 encode decode: 'https://nachtimwald.com/2017/11/18/base64-encode-and-decode-in-c/'
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -23,6 +27,62 @@
 #include "dns.h"
 #include "hash_table.h"
 
+
+const char b64chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+size_t b64_encoded_size(size_t inlen)
+{
+	size_t ret;
+
+	ret = inlen;
+	if (inlen % 3 != 0)
+		ret += 3 - (inlen % 3);
+	ret /= 3;
+	ret *= 4;
+
+	fprintf(stderr, "Dns: inlen: %d | ret: %d\n", inlen, ret);
+	return ret;
+}
+
+void b64_encode(const unsigned char *in, char** out, size_t len)
+{
+	size_t  elen;
+	size_t  i;
+	size_t  j;
+	size_t  v;
+
+	if (in == NULL || len == 0)
+		return;
+
+	elen = b64_encoded_size(len);
+	(*out) = realloc((*out), sizeof(char) * (elen+1));
+
+	if ((*out) == NULL)
+	{
+		exit(EXIT_FAILURE);
+	}
+
+	(*out)[elen] = '\0';
+
+	for (i=0, j=0; i<len; i+=3, j+=4) {
+		v = in[i];
+		v = i+1 < len ? v << 8 | in[i+1] : v << 8;
+		v = i+2 < len ? v << 8 | in[i+2] : v << 8;
+
+		(*out)[j]   = b64chars[(v >> 18) & 0x3F];
+		(*out)[j+1] = b64chars[(v >> 12) & 0x3F];
+		if (i+1 < len) {
+			(*out)[j+2] = b64chars[(v >> 6) & 0x3F];
+		} else {
+			(*out)[j+2] = '=';
+		}
+		if (i+2 < len) {
+			(*out)[j+3] = b64chars[v & 0x3F];
+		} else {
+			(*out)[j+3] = '=';
+		}
+	}
+}
 
 void debug_data_print(unsigned char *data)
 {
@@ -63,6 +123,12 @@ void process_rr_data(char* dns_data, unsigned int data_offset, uint16_t rr_type,
 		sprintf(*domain_name, "%s CNAME %s", *domain_name, *answer_data);
 		ht_process_rr(rr_table, *domain_name);
 	}
+	else if (rr_type == PTR)
+	{
+		get_domain_name(dns_data, data_offset, answer_data, 0, max_len);
+		sprintf(*domain_name, "%s PTR %s", *domain_name, *answer_data);
+		ht_process_rr(rr_table, *domain_name);
+	}
 	else if (rr_type == SOA)
 	{
 		get_domain_name(dns_data, data_offset, answer_type, 0, max_len);
@@ -86,8 +152,8 @@ void process_rr_data(char* dns_data, unsigned int data_offset, uint16_t rr_type,
 	{
 		if (rr_data_length >= max_len)
 		{
-			max_len += (rr_data_length + 1);
-			//fprintf(stderr, "Dns: new max_len: %u\n", max_len);
+			max_len += rr_data_length;
+			fprintf(stderr, "Dns: new max_len: %u\n", max_len);
 			(*answer_data) = realloc((*answer_data), sizeof(char) * max_len);
 
 			if ((*answer_data) == NULL)
@@ -107,42 +173,46 @@ void process_rr_data(char* dns_data, unsigned int data_offset, uint16_t rr_type,
 		sprintf(*domain_name, "%s TXT \"%s\"", *domain_name, *answer_data);
 		ht_process_rr(rr_table, *domain_name);
 	}
-	else if (rr_type == SPF)
+	else if (rr_type == DS)
+	{/*
+		sprintf(*domain_name, "%s DS %s %s", *domain_name, *answer_type, *answer_data);
+		ht_process_rr(rr_table, *domain_name);*/
+	}
+	else if (rr_type == RRSIG)
 	{
-		if (rr_data_length >= max_len)
-		{
-			max_len += (rr_data_length + 1);
-			//fprintf(stderr, "Dns: new max_len: %u\n", max_len);
-			(*answer_data) = realloc((*answer_data), sizeof(char) * max_len);
-
-			if ((*answer_data) == NULL)
-			{
-				exit(EXIT_FAILURE);
-			}
-		}
-
-		//debug_data_print(dns_data + data_offset);
-		uint8_t* text_length = (uint8_t*) dns_data + data_offset;
-		memset(*answer_data, 0, max_len);
-
-		for (int i = 0; i < *text_length; i++) {
-			(*answer_data)[i] = dns_data[data_offset + i + 1];
-			//fprintf(stderr, "%c", dns_data[data_offset + i + 1]);
-		}
-		sprintf(*domain_name, "%s SPF \"%s\"", *domain_name, *answer_data);
+		get_domain_name(dns_data, (data_offset + 18), answer_type, 0, max_len);
+		//debug_data_print(dns_data);
+		//debug_data_print((dns_data + data_offset + 18));
+		//fprintf(stderr, "Dns: RRSIG name: %s\n", *answer_type);
+		unsigned int new_offset = get_offset_to_skip_rr_name((dns_data + data_offset + 18), data_offset);
+		//fprintf(stderr, "Dns: new: %d | data len: %d\n", new_offset, (rr_data_length - 18 - (new_offset - data_offset)));
+		b64_encode((dns_data + new_offset + 18), answer_data, (rr_data_length - 18 - (new_offset - data_offset)));
+		sprintf(*domain_name, "%s RRSIG %d %d %d %zu %zu %zu %d %s %s", *domain_name, ntohs(*((uint16_t*) (dns_data + data_offset))),
+		        *((uint8_t*) (dns_data + data_offset + 2)), *((uint8_t*) (dns_data + data_offset + 3)),
+		        ntohl(*((uint32_t*) (dns_data + data_offset + 4))), ntohl(*((uint32_t*) (dns_data + data_offset + 8))),
+		        ntohl(*((uint32_t*) (dns_data + data_offset + 12))), ntohs(*((uint16_t*) (dns_data + data_offset + 16))),
+		        *answer_type, *answer_data);
 		ht_process_rr(rr_table, *domain_name);
 	}
-	else if (rr_type == DNSSECA)
+	else if (rr_type == NSEC)
+	{/*
+		sprintf(*domain_name, "%s NSEC %s %s", *domain_name, *answer_type, *answer_data);
+		ht_process_rr(rr_table, *domain_name);*/
+	}
+	else if (rr_type == DNSKEY)
 	{
-		strcpy(*answer_type, "DNSSEC");
-		sprintf(*domain_name, "%s DNSSEC %s %s", *domain_name, *answer_type, *answer_data);
+		//memset(*answer_data, 0, max_len);
+		b64_encode((dns_data + data_offset + 4), answer_data, (rr_data_length - 4));
+		//fprintf(stderr, "Dns: key strlen: %d\n", strlen(*answer_data));
+
+		sprintf(*domain_name, "%s DNSKEY \"%d %d %d %s\"", *domain_name, ntohs(*((uint16_t*) (dns_data + data_offset))),
+		        *((uint8_t*) (dns_data + data_offset + 2)), *((uint8_t*) (dns_data + data_offset + 3)), *answer_data);
 		ht_process_rr(rr_table, *domain_name);
 	}
-	else if (rr_type == DNSSECV)
-	{
-		strcpy(*answer_type, "DNSSEC");
-		sprintf(*domain_name, "%s DNSSEC %s %s", *domain_name, *answer_type, *answer_data);
-		ht_process_rr(rr_table, *domain_name);
+	else if (rr_type == NSEC3)
+	{/*
+		sprintf(*domain_name, "%s NSEC3 %s %s", *domain_name, *answer_type, *answer_data);
+		ht_process_rr(rr_table, *domain_name);*/
 	}
 }
 
@@ -235,7 +305,7 @@ uint16_t get_offset_to_skip_queries(char* dns_queries, uint16_t total_queries)
 uint16_t get_offset_to_skip_rr_name(char* dns_queries, unsigned int data_offset)
 {
 	//fprintf(stderr, "Dns: dns_queries[data_offset] = %d | %d\n", (uint8_t) dns_queries[data_offset], C0);
-	while ((uint8_t) dns_queries[data_offset] != C0)
+	while ((uint8_t) dns_queries[data_offset] != C0 && (uint8_t) dns_queries[data_offset] != C1)
 	{
 		if ((uint8_t) dns_queries[data_offset] == 0)
 		{
@@ -245,6 +315,11 @@ uint16_t get_offset_to_skip_rr_name(char* dns_queries, unsigned int data_offset)
 		data_offset++;
 	}
 	return (data_offset + 2);
+
+	while ((*((uint16_t *) (dns_queries + data_offset)) & 0xc000) != 0xc000)
+	{
+
+	}
 }
 
 void get_rr_type(char* dns_data, unsigned int data_offset, uint16_t* rr_type)
