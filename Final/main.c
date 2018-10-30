@@ -24,61 +24,47 @@
 #include "communication.h"
 #include "dns.h"
 #include "hash_table.h"
+#include "pcap.h"
 
 tHTable* rr_table;
-int keepRunning = 1;
 
 void my_handler(int signum)
 {
-	//printf("Keep running b4: %d\n", keepRunning);
 	if (signum == SIGUSR1)
 	{
 		ht_foreach(rr_table, ht_print_item);
-	}
-	else if (signum == SIGINT)
-	{
-		keepRunning = 0;
-		//printf("Keep running after: %d\n", keepRunning);
 	}
 	return;
 }
 
 int main(int argc, char** argv)
 {
-	fprintf(stderr, "Main: Program started...\n");
-	rr_table = malloc(sizeof(tHTable)); // Allocate memory for hash table
-	htInit(rr_table); // Initiate hash table
-
-	if (rr_table == NULL) // Hash table init crashed
-	{
-		exit(EXIT_FAILURE);
-	}
-	signal(SIGUSR1, my_handler); // Handle SIGUSR1 signal, it will print hash table content
+	fprintf(stderr, "Main: Program started... %d \n", EXIT_SUCCESS);
 	//signal(SIGINT, my_handler);
-	/*
+
 	// Input parameters parsing
 	if (argc == 1)
 	{
-		fprintf(stdout, "Program has been executed without input parameters\nProgram ended successfully\n");
+		fprintf(stderr, "Program has been executed without input parameters\nProgram ended successfully\n");
 		exit(EXIT_SUCCESS);
 	}
-	*/
 
 	// Input parameters variables
-	//bool rflag = 0;
-	//bool iflag = 0;
-	//bool sflag = 0;
-	//bool tflag = 0;
-	//char* file_name = NULL;
-	//char* if_name = "eth0";
-	//char* syslog_server = NULL;
-	//int seconds = 10;
-	//opterr = 0;
-	//int arg = 0;
+	bool rflag = 0;
+	bool iflag = 0;
+	bool sflag = 0;
+	bool tflag = 0;
+	char* file_name = NULL;
+	char* if_name = NULL;
+	char* syslog_server = NULL;
+	int seconds = 60;
+	opterr = 0;
+	int arg = 0;
+	int result = EXIT_SUCCESS;
 
 	//fprintf(stderr, "Main: Interface: %s\n", if_name);
 
-	/*
+
 	while ((arg = getopt(argc, argv, "r:i:s:t:")) != -1)
 	{
 		switch (arg)
@@ -100,8 +86,11 @@ int main(int argc, char** argv)
 
 			case 't':
 				tflag = 1;
-				seconds = optarg;
+				seconds = atoi(optarg);
 				break;
+			default:
+				fprintf(stderr, "Unknown parameter was passed.\nUsage: dns-export [-r file.pcap] [-i interface] [-s syslog-server] [-t seconds]\n");
+				exit(EXIT_FAILURE);
 		}
 	}
 
@@ -110,42 +99,78 @@ int main(int argc, char** argv)
 		fprintf(stderr, "Program can analyze only a file or an interface at once\n");
 		exit(EXIT_FAILURE);
 	}
-	*/
 
+	if (rflag == 1 && tflag == 1)
+	{
+		fprintf(stderr, "Parameters -r and -t can't be active at once\n");
+		exit(EXIT_FAILURE);
+	}
 
+	char buffer[BUFFER_SIZE]; // Buffer for receiving data
+	memset(buffer, 0, BUFFER_SIZE); // Null the buffer
+	rr_table = malloc(sizeof(tHTable)); // Allocate memory for hash table
+	htInit(rr_table); // Initiate hash table
+
+	if (rr_table == NULL) // Hash table init crashed
+	{
+		exit(EXIT_FAILURE);
+	}
+
+	signal(SIGUSR1, my_handler); // Handle SIGUSR1 signal, it will print hash table content
+
+	if (rflag)
+	{
+		if (file_name == NULL)
+		{
+			fprintf(stderr, "No filename input\n");
+			free(rr_table);
+			exit(EXIT_FAILURE);
+		}
+
+		result = process_pcap_file("dns.pcap", buffer, rr_table);
+
+		if (sflag)
+		{
+			//send to syslog server
+		}
+		else
+		{
+			ht_foreach(rr_table, ht_print_item);
+			exit(EXIT_SUCCESS);
+		}
+	}
+
+	if (iflag)
+	{
+		int connection_socket; // Listening socket number
+
+		connection_socket = open_raw_socket(); // Open raw listening socket
+
+		fprintf(stderr, "Main: Connection socket number: %i\n", connection_socket);
+
+		if (connection_socket == -1) // If opening socket failed
+		{
+			fprintf(stderr, "Creating socket failed.\n");
+			free(rr_table);
+			exit(EXIT_FAILURE);
+		}
+
+		result = process_dns_packet(buffer, rr_table, connection_socket);
+		close(connection_socket);
+		fprintf(stdout, "Connection closed, program ended successfully.\n");
+		exit(EXIT_SUCCESS);
+
+	}
 	// Socket variables
-	int connection_socket; // Listening socket number
 	//int sock_opt = 1;
 	//struct ifreq if_id;
 	//struct ifreq if_mac;
-	char buffer[BUFFER_SIZE]; // Buffer for receiving data
-	struct ether_header* ethernet_header = (struct ether_header *) buffer;
+	/*struct ether_header* ethernet_header = (struct ether_header *) buffer;
 	struct iphdr* ip_header = (struct iphdr *) (buffer + sizeof(struct ether_header));
 	struct udphdr* udp_header = (struct udphdr *) (buffer + sizeof(struct iphdr) + sizeof(struct ether_header));
 	struct dns_hdr* dns_header = (struct dns_hdr *) (buffer + sizeof(struct udphdr) + sizeof(struct iphdr) + sizeof(struct ether_header));
-	char* dns_data = (char *) (buffer + sizeof(struct dns_hdr) + sizeof(struct udphdr) + sizeof(struct iphdr) + sizeof(struct ether_header));
+	char* dns_data = (char *) (buffer + sizeof(struct dns_hdr) + sizeof(struct udphdr) + sizeof(struct iphdr) + sizeof(struct ether_header));*/
 
-	memset(buffer, 0, BUFFER_SIZE); // Null the buffer
-
-	// Open RAW socket to send on
-	/*
-	if ((connection_socket = socket(AF_PACKET, SOCK_RAW, IPPROTO_RAW)) == -1)
-	{
-		fprintf(stderr, "Creating socket failed.\n");
-		exit(EXIT_FAILURE);
-	}
-	*/
-
-	connection_socket = open_raw_socket(); // Open raw listening socket
-
-	fprintf(stderr, "Main: Connection socket number: %i\n", connection_socket);
-
-	if (connection_socket == -1) // If opening socket failed
-	{
-		fprintf(stderr, "Creating socket failed.\n");
-		free(rr_table);
-		exit(EXIT_FAILURE);
-	}
 /*
 	// Get the index of the interface to send on
 	if (get_interface_index(if_id, if_name, connection_socket) < 0)
@@ -182,15 +207,14 @@ int main(int argc, char** argv)
 
 */
 
-	char* domain_name; // Domain name of DNS record
-	char* answer_type; // Type of resource record
-	char* answer_data; // Data of specific resource record
 
+/*
 	while (keepRunning) // Program has to be in loop to receive packets till someone kills the program
 	{
 		//memset(buffer, 0, BUFFER_SIZE);
 		unsigned long bytes_received = receive_packet(buffer, BUFFER_SIZE, connection_socket);
-		fprintf(stderr, "Main: Bytes received: %lu\n", bytes_received);
+
+		//fprintf(stderr, "Main: Bytes received: %lu\n", bytes_received);
 		//memset(domain_name, 0, max_len);
 		//memset(answer_data, 0, max_len);
 		//memset(answer_type, 0, max_len);
@@ -225,7 +249,7 @@ int main(int argc, char** argv)
 					free(answer_type);
 					free(domain_name);
 					free(rr_table);
-					close(connection_socket);
+					//close(connection_socket);
 					exit(EXIT_FAILURE);
 				}
 
@@ -254,9 +278,7 @@ int main(int argc, char** argv)
 			}
 			//fprintf(stderr, "_____________________________//\n");
 		}
-	}
-	close(connection_socket);
-	fprintf(stdout, "Connection closed, program ended successfully.\n");
+	}*/
 
 	return 0;
 }

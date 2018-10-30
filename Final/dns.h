@@ -11,8 +11,6 @@
 
 // Ports
 #define DNS_PORT 53
-#define C0 192
-#define C1 193
 
 // DNS record types
 #define A 1
@@ -46,6 +44,7 @@ struct dns_hdr
 
 size_t b64_encoded_size(size_t inlen);
 void b64_encode(const unsigned char *in, char** out, size_t len);
+int process_dns_packet(char* buffer, tHTable* rr_table, int connection_socket);
 void process_rr_data(char* dns_data, unsigned int data_offset, uint16_t rr_type, uint16_t rr_data_length, char** domain_name,
                      char** answer_type, char** answer_data, unsigned int max_len, tHTable* rr_table);
 void print_dns_header(struct dns_hdr* dns_header);
