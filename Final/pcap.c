@@ -73,10 +73,10 @@ int process_pcap_file(char* filename, char* buffer, tHTable* rr_table)
 			//fprintf(stderr, "Main: skipped header offset: %u\n", offset);
 			//fprintf(stderr, "Main: skip query offset: %u\n", offset);
 			//fprintf(stderr, "Main: answer + authority: %d\n", (ntohs(dns_header->total_answer_RRs) + ntohs(dns_header->total_authority_RRs)));
-			for (int i = 0; i < ntohs(dns_header->total_answer_RRs); i++) {
+			for (int i = 0; i < ntohs(dns_header->total_answer_RRs) + ntohs(dns_header->total_authority_RRs); i++) {
 				domain_name = malloc(sizeof(char) * 1000);
-				answer_data = malloc(sizeof(char) * 50);
-				answer_type = malloc(sizeof(char) * 50);
+				answer_data = malloc(sizeof(char) * 500);
+				answer_type = malloc(sizeof(char) * 500);
 				//memset(domain_name, 0, 200);
 				//memset(answer_data, 0, 100);
 				//memset(answer_type, 0, 100);
@@ -86,7 +86,9 @@ int process_pcap_file(char* filename, char* buffer, tHTable* rr_table)
 					free(answer_data);
 					free(answer_type);
 					free(domain_name);
+					free(hdr);
 					free(rr_table);
+					fclose(pcap_file);
 					exit(EXIT_FAILURE);
 				}
 
@@ -105,7 +107,7 @@ int process_pcap_file(char* filename, char* buffer, tHTable* rr_table)
 				get_rr_data_length(dns_data, offset, &rr_data_length); // Get data length of i-answer
 				//fprintf(stderr, "Main: RR data length: %d\n", rr_data_length);
 				// Process specific data of i-answer
-				process_rr_data(dns_data, (offset + 10), rr_type, rr_data_length, &domain_name, &answer_type, &answer_data, 50, rr_table);
+				process_rr_data(dns_data, (offset + 10), rr_type, rr_data_length, &domain_name, &answer_type, &answer_data, 500, rr_table);
 				offset += rr_data_length + 10; // Get offset to point to next answer
 				//fprintf(stderr, "Main: skipped answer offset: %u\n", offset);
 				//fprintf(stderr, "Main: Answer: %s | %d\n", domain_name, strlen(domain_name));
@@ -115,8 +117,10 @@ int process_pcap_file(char* filename, char* buffer, tHTable* rr_table)
 			}
 			//fprintf(stderr, "_____________________________//\n");
 		}
+		free(domain_name);
+		free(answer_data);
+		free(answer_type);
 	}
-
 	free(hdr);
 	fclose(pcap_file);
 	return 0;

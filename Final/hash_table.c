@@ -247,7 +247,6 @@ void ht_process_rr(tHTable* ptrht, char* rr_string)
 
 void ht_foreach(tHTable* ptrht, void (*item_callback)(tHTItem* item))
 {
-	fprintf(stdout, "/_______________#Answers#_______________\\\n");
 	for(int i = 0; i < HTSIZE; i++)
 	{
 		tHTItem* processed_item = (*ptrht)[i];
@@ -261,7 +260,6 @@ void ht_foreach(tHTable* ptrht, void (*item_callback)(tHTItem* item))
 			//fprintf(stderr, "Hash_table: ht_foreach: %d\n", j);
 		}
 	}
-	fprintf(stdout, "\\_______________#Answers#_______________/\n");
 }
 
 void ht_print_item(tHTItem* item)

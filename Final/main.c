@@ -21,13 +21,15 @@
 #include <netinet/ether.h>
 #include <linux/if_packet.h>
 #include <time.h>
+#include <sys/time.h>
 #include "communication.h"
 #include "dns.h"
 #include "hash_table.h"
 #include "pcap.h"
 
-tHTable* rr_table;
+tHTable* rr_table; // Hash table of resource records
 
+// SIGUSR1 handler
 void my_handler(int signum)
 {
 	if (signum == SIGUSR1)
@@ -39,8 +41,7 @@ void my_handler(int signum)
 
 int main(int argc, char** argv)
 {
-	fprintf(stderr, "Main: Program started... %d \n", EXIT_SUCCESS);
-	//signal(SIGINT, my_handler);
+	fprintf(stderr, "Program started...\n");
 
 	// Input parameters parsing
 	if (argc == 1)
@@ -50,10 +51,10 @@ int main(int argc, char** argv)
 	}
 
 	// Input parameters variables
-	bool rflag = 0;
-	bool iflag = 0;
-	bool sflag = 0;
-	bool tflag = 0;
+	int rflag = 0;
+	int iflag = 0;
+	int sflag = 0;
+	int tflag = 0;
 	char* file_name = NULL;
 	char* if_name = NULL;
 	char* syslog_server = NULL;
@@ -61,9 +62,6 @@ int main(int argc, char** argv)
 	opterr = 0;
 	int arg = 0;
 	int result = EXIT_SUCCESS;
-
-	//fprintf(stderr, "Main: Interface: %s\n", if_name);
-
 
 	while ((arg = getopt(argc, argv, "r:i:s:t:")) != -1)
 	{
@@ -106,179 +104,144 @@ int main(int argc, char** argv)
 		exit(EXIT_FAILURE);
 	}
 
+	// Socket variables
+	struct ifreq if_addr;
+	int syslog_socket;
+	struct sockaddr_in server_address;
+	struct hostent* server;
+	unsigned int bytes_sent = 0;
+
+	if (sflag)
+	{
+		// Get server info
+		if((server = gethostbyname(syslog_server)) == NULL)
+		{
+			fprintf(stderr, "Get host by name failed.\n");
+			exit(EXIT_FAILURE);
+		}
+
+		memset(&server_address, 0, sizeof(server_address)); // Zeroing server_address
+		server_address.sin_family = AF_INET; // IPv4
+		server_address.sin_port = htons(SYSLOG_PORT); // Port number
+		memcpy((char *)&server_address.sin_addr.s_addr, (char *)server->h_addr, server->h_length); // server_address initial
+
+		syslog_socket = open_udp_socket();
+		if (syslog_socket <= 0) // If opening socket failed
+		{
+			fprintf(stderr, "Creating socket failed.\n");
+			close(syslog_socket);
+			exit(EXIT_FAILURE);
+		}
+
+		// Get my interface info
+		memset(&if_addr, 0, sizeof(struct ifreq));
+		strncpy(if_addr.ifr_name, "eth0", 5);
+		if (ioctl(syslog_socket, SIOCGIFADDR, &if_addr) == -1)
+		{
+			fprintf(stderr, "Getting interface ip failed.\n");
+			close(syslog_socket);
+			exit(EXIT_FAILURE);
+		}
+	}
+
 	char buffer[BUFFER_SIZE]; // Buffer for receiving data
 	memset(buffer, 0, BUFFER_SIZE); // Null the buffer
+
 	rr_table = malloc(sizeof(tHTable)); // Allocate memory for hash table
 	htInit(rr_table); // Initiate hash table
 
 	if (rr_table == NULL) // Hash table init crashed
 	{
+		close(syslog_socket);
 		exit(EXIT_FAILURE);
 	}
 
-	signal(SIGUSR1, my_handler); // Handle SIGUSR1 signal, it will print hash table content
-
-	if (rflag)
+	if (rflag) // File processing
 	{
-		if (file_name == NULL)
+		result = process_pcap_file(file_name, buffer, rr_table);
+
+		if (sflag) // Send to syslog server
 		{
-			fprintf(stderr, "No filename input\n");
+			for(int i = 0; i < MAX_HTSIZE; i++)
+			{
+				tHTItem* processed_item = (*rr_table)[i];
+				while (processed_item != NULL)
+				{
+					char string_time[80];
+					memset(string_time, 0, 80);
+					get_timestamp(string_time);
+					sprintf(buffer, "<134>1 %s %s dns-export - - - %s %d", string_time, inet_ntoa(((struct sockaddr_in *)&if_addr.ifr_addr)->sin_addr),
+							processed_item->key, processed_item->data);
+					bytes_sent = sendto(syslog_socket, buffer, strlen(buffer), 0, (struct sockaddr *)&server_address, sizeof(struct sockaddr_in));
+					memset(buffer, 0, BUFFER_SIZE);
+					processed_item = processed_item->ptrnext;
+				}
+			}
+			htClearAll(rr_table);
 			free(rr_table);
-			exit(EXIT_FAILURE);
+			close(syslog_socket);
 		}
-
-		result = process_pcap_file("dns.pcap", buffer, rr_table);
-
-		if (sflag)
-		{
-			//send to syslog server
-		}
-		else
+		else // Print to stdout
 		{
 			ht_foreach(rr_table, ht_print_item);
+			htClearAll(rr_table);
+			free(rr_table);
 			exit(EXIT_SUCCESS);
 		}
 	}
 
-	if (iflag)
+	if (iflag) // Capture on interface
 	{
+		signal(SIGUSR1, my_handler); // Handle SIGUSR1 signal, it will print hash table content
+
 		int connection_socket; // Listening socket number
 
 		connection_socket = open_raw_socket(); // Open raw listening socket
-
-		fprintf(stderr, "Main: Connection socket number: %i\n", connection_socket);
 
 		if (connection_socket == -1) // If opening socket failed
 		{
 			fprintf(stderr, "Creating socket failed.\n");
 			free(rr_table);
+			close(connection_socket);
 			exit(EXIT_FAILURE);
 		}
 
-		result = process_dns_packet(buffer, rr_table, connection_socket);
+		// Bind socket to device
+		if (setsockopt(connection_socket, SOL_SOCKET, SO_BINDTODEVICE, if_name, strlen(if_name)+1) == -1)
+		{
+			fprintf(stderr, "Binding socket failed.\n");
+			free(rr_table);
+			close(connection_socket);
+			exit(EXIT_FAILURE);
+		}
+
+		int sockopt = 1;
+		if (setsockopt(connection_socket, SOL_SOCKET, SO_REUSEADDR, &sockopt, sizeof sockopt) == -1) // Allow reuse of socket
+		{
+			fprintf(stderr, "Reusing socket failed.\n");
+			free(rr_table);
+			close(connection_socket);
+			exit(EXIT_FAILURE);
+		}
+
+		struct timeval recv_timeout;
+		recv_timeout.tv_sec = 4;
+		recv_timeout.tv_usec = 0;
+		if (setsockopt(connection_socket, SOL_SOCKET, SO_RCVTIMEO, &recv_timeout, sizeof(struct timeval)) == -1) // Timeout responses
+		{
+			fprintf(stderr, "Timing socket failed.\n");
+			free(rr_table);
+			close(connection_socket);
+			exit(EXIT_FAILURE);
+		}
+
+		result = process_dns_packet(buffer, rr_table, connection_socket, syslog_socket, server_address, seconds, sflag);
+
+		free(rr_table);
 		close(connection_socket);
 		fprintf(stdout, "Connection closed, program ended successfully.\n");
 		exit(EXIT_SUCCESS);
 
 	}
-	// Socket variables
-	//int sock_opt = 1;
-	//struct ifreq if_id;
-	//struct ifreq if_mac;
-	/*struct ether_header* ethernet_header = (struct ether_header *) buffer;
-	struct iphdr* ip_header = (struct iphdr *) (buffer + sizeof(struct ether_header));
-	struct udphdr* udp_header = (struct udphdr *) (buffer + sizeof(struct iphdr) + sizeof(struct ether_header));
-	struct dns_hdr* dns_header = (struct dns_hdr *) (buffer + sizeof(struct udphdr) + sizeof(struct iphdr) + sizeof(struct ether_header));
-	char* dns_data = (char *) (buffer + sizeof(struct dns_hdr) + sizeof(struct udphdr) + sizeof(struct iphdr) + sizeof(struct ether_header));*/
-
-/*
-	// Get the index of the interface to send on
-	if (get_interface_index(if_id, if_name, connection_socket) < 0)
-	{
-		fprintf(stderr, "Retrieving of interface index failed.\n");
-		exit(EXIT_FAILURE);
-	}
-
-	fprintf(stdout, "Interface index: %i.\n", if_id.ifr_ifindex);
-
-	// Get the mac of the interface to send on
-	if (get_interface_mac(if_mac, if_name, connection_socket) < 0)
-	{
-		fprintf(stderr, "Retrieving of interface mac failed.\n");
-		exit(EXIT_FAILURE);
-	}
-
-	fprintf(stdout, "Interface mac successfully processed.\n");
-
-	// Allow reuse of the socket
-	if (setsockopt(connection_socket, SOL_SOCKET, SO_REUSEADDR, &sock_opt, sizeof sock_opt) == -1) {
-		fprintf(stderr, "Reusing socket failed.\n");
-		close(connection_socket);
-		exit(EXIT_FAILURE);
-	}
-
-	// Bind socket to device
-	if (setsockopt(connection_socket, SOL_SOCKET, SO_BINDTODEVICE, if_name, strlen(if_name)+1) == -1)
-	{
-		fprintf(stderr, "Binding socket failed.\n");
-		close(connection_socket);
-		exit(EXIT_FAILURE);
-	}
-
-*/
-
-
-/*
-	while (keepRunning) // Program has to be in loop to receive packets till someone kills the program
-	{
-		//memset(buffer, 0, BUFFER_SIZE);
-		unsigned long bytes_received = receive_packet(buffer, BUFFER_SIZE, connection_socket);
-
-		//fprintf(stderr, "Main: Bytes received: %lu\n", bytes_received);
-		//memset(domain_name, 0, max_len);
-		//memset(answer_data, 0, max_len);
-		//memset(answer_type, 0, max_len);
-		uint16_t offset = 0; // Offset is a 16bit integer which is used to move in DNS data
-		uint16_t rr_type; // Type of resource record
-		uint16_t rr_data_length; // Data length of specific resource record
-
-		//print_ip_header(ip_header);
-
-		//UDP
-		if(ntohs(udp_header->source) == DNS_PORT) // Filter incoming packets only on DNS port
-		{
-			//print_ethernet_header(ethernet_header);
-			//print_udp_header(udp_header);
-			//print_dns_header(dns_header);
-			//fprintf(stderr, "Main: data offset: %u\n", offset);
-			offset = get_offset_to_skip_queries(dns_data, ntohs(dns_header->total_questions)); // Offset will point over the question data
-			//fprintf(stderr, "Main: skipped header offset: %u\n", offset);
-			//fprintf(stderr, "Main: skip query offset: %u\n", offset);
-			//fprintf(stderr, "Main: answer + authority: %d\n", (ntohs(dns_header->total_answer_RRs) + ntohs(dns_header->total_authority_RRs)));
-			for (int i = 0; i < ntohs(dns_header->total_answer_RRs); i++) {
-				domain_name = malloc(sizeof(char) * 1000);
-				answer_data = malloc(sizeof(char) * 50);
-				answer_type = malloc(sizeof(char) * 50);
-				//memset(domain_name, 0, 200);
-				//memset(answer_data, 0, 100);
-				//memset(answer_type, 0, 100);
-
-				if (domain_name == NULL || answer_data == NULL || answer_type == NULL)
-				{
-					free(answer_data);
-					free(answer_type);
-					free(domain_name);
-					free(rr_table);
-					//close(connection_socket);
-					exit(EXIT_FAILURE);
-				}
-
-				fprintf(stderr, "Main: answer index: %d\n", i);
-				//fprintf(stderr, "before domain_name: %p\n", domain_name);
-				//debug_data_print(dns_data + offset);
-				get_domain_name(dns_data, offset, &domain_name, 0, 1000); // Get domain name of i-answer
-				//fprintf(stderr, "Main: Domain name: %s | %d\n", domain_name, strlen(domain_name));
-				//fprintf(stderr, "after domain_name: %p\n", domain_name);
-
-				offset = get_offset_to_skip_rr_name(dns_data, offset); // Get over domain name of i-answer
-				//fprintf(stderr, "Main: skipped rr name offset + 10: %u\n", offset + 10);
-				get_rr_type(dns_data, offset, &rr_type); // Get type of i-answer
-				//fprintf(stderr, "Main: RR type: %d\n", rr_type);
-				//debug_data_print(dns_data + offset);
-				get_rr_data_length(dns_data, offset, &rr_data_length); // Get data length of i-answer
-				fprintf(stderr, "Main: RR data length: %d\n", rr_data_length);
-				// Process specific data of i-answer
-				process_rr_data(dns_data, (offset + 10), rr_type, rr_data_length, &domain_name, &answer_type, &answer_data, 50, rr_table);
-				offset += rr_data_length + 10; // Get offset to point to next answer
-				//fprintf(stderr, "Main: skipped answer offset: %u\n", offset);
-				//fprintf(stderr, "Main: Answer: %s | %d\n", domain_name, strlen(domain_name));
-
-
-				//fprintf(stderr, "_____________________________\n");
-			}
-			//fprintf(stderr, "_____________________________//\n");
-		}
-	}*/
-
-	return 0;
+	return result;
 }

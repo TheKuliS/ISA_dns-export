@@ -44,7 +44,7 @@ size_t b64_encoded_size(size_t inlen)
 	return ret;
 }
 
-void b64_encode(const unsigned char *in, char** out, size_t len)
+void b64_encode(const unsigned char *in, char** out, size_t len) // DNSKEY encoding
 {
 	size_t  elen;
 	size_t  i;
@@ -84,7 +84,7 @@ void b64_encode(const unsigned char *in, char** out, size_t len)
 	}
 }
 
-void debug_data_print(unsigned char *data)
+void debug_data_print(unsigned char *data) // Debug print
 {
 	//printf("Dns: byte: \n");
 	for (int i = 0; i < 8; i++)
@@ -94,7 +94,8 @@ void debug_data_print(unsigned char *data)
 	printf("\n");
 }
 
-int process_dns_packet(char* buffer, tHTable* rr_table, int connection_socket)
+int process_dns_packet(char* buffer, tHTable* rr_table, int connection_socket, int syslog_socket,
+		struct sockaddr_in server_address, int seconds, int sflag)
 {
 	struct ether_header* ethernet_header = (struct ether_header *) buffer;
 	struct iphdr* ip_header = (struct iphdr *) (buffer + sizeof(struct ether_header));
@@ -104,9 +105,34 @@ int process_dns_packet(char* buffer, tHTable* rr_table, int connection_socket)
 	char* domain_name; // Domain name of DNS record
 	char* answer_type; // Type of resource record
 	char* answer_data; // Data of specific resource record
+	time_t time_start;
+	time_t time_end;
+	double time_difference;
+	time_start = time(NULL);
+	unsigned int bytes_sent = 0;
+
 
 	while (1) // Program has to be in loop to receive packets till someone kills the program
 	{
+		time_end = time(NULL);
+		if ((time_difference = difftime(time_end, time_start)) >= (double) seconds && sflag == 1)
+		{
+			for(int i = 0; i < MAX_HTSIZE; i++)
+			{
+				tHTItem* processed_item = (*rr_table)[i];
+				while (processed_item != NULL)
+				{
+					char string_time[80];
+					get_timestamp(string_time);
+					sprintf(buffer, "<134>1 %s 10.0.2.15 dns-export - - - %s %d", string_time, processed_item->key, processed_item->data);
+					fprintf(stdout, "%s\n", buffer);
+					bytes_sent = sendto(syslog_socket, buffer, strlen(buffer), 0, (struct sockaddr *)&server_address, sizeof(struct sockaddr_in));
+					memset(buffer, 0, BUFFER_SIZE);
+					processed_item = processed_item->ptrnext;
+				}
+			}
+			time_start = time(NULL);
+		}
 		//memset(buffer, 0, BUFFER_SIZE);
 		unsigned long bytes_received = receive_packet(buffer, BUFFER_SIZE, connection_socket);
 
@@ -131,10 +157,10 @@ int process_dns_packet(char* buffer, tHTable* rr_table, int connection_socket)
 			//fprintf(stderr, "Main: skipped header offset: %u\n", offset);
 			//fprintf(stderr, "Main: skip query offset: %u\n", offset);
 			//fprintf(stderr, "Main: answer + authority: %d\n", (ntohs(dns_header->total_answer_RRs) + ntohs(dns_header->total_authority_RRs)));
-			for (int i = 0; i < ntohs(dns_header->total_answer_RRs); i++) {
+			for (int i = 0; i < ntohs(dns_header->total_answer_RRs) + ntohs(dns_header->total_authority_RRs); i++) {
 				domain_name = malloc(sizeof(char) * 1000);
-				answer_data = malloc(sizeof(char) * 50);
-				answer_type = malloc(sizeof(char) * 50);
+				answer_data = malloc(sizeof(char) * 500);
+				answer_type = malloc(sizeof(char) * 500);
 				//memset(domain_name, 0, 200);
 				//memset(answer_data, 0, 100);
 				//memset(answer_type, 0, 100);
@@ -149,7 +175,7 @@ int process_dns_packet(char* buffer, tHTable* rr_table, int connection_socket)
 					exit(EXIT_FAILURE);
 				}
 
-				fprintf(stderr, "Main: answer index: %d\n", i);
+				//fprintf(stderr, "Main: answer index: %d\n", i);
 				//fprintf(stderr, "before domain_name: %p\n", domain_name);
 				//debug_data_print(dns_data + offset);
 				get_domain_name(dns_data, offset, &domain_name, 0, 1000); // Get domain name of i-answer
@@ -162,9 +188,9 @@ int process_dns_packet(char* buffer, tHTable* rr_table, int connection_socket)
 				//fprintf(stderr, "Main: RR type: %d\n", rr_type);
 				//debug_data_print(dns_data + offset);
 				get_rr_data_length(dns_data, offset, &rr_data_length); // Get data length of i-answer
-				fprintf(stderr, "Main: RR data length: %d\n", rr_data_length);
+				//fprintf(stderr, "Main: RR data length: %d\n", rr_data_length);
 				// Process specific data of i-answer
-				process_rr_data(dns_data, (offset + 10), rr_type, rr_data_length, &domain_name, &answer_type, &answer_data, 50, rr_table);
+				process_rr_data(dns_data, (offset + 10), rr_type, rr_data_length, &domain_name, &answer_type, &answer_data, 500, rr_table);
 				offset += rr_data_length + 10; // Get offset to point to next answer
 				//fprintf(stderr, "Main: skipped answer offset: %u\n", offset);
 				//fprintf(stderr, "Main: Answer: %s | %d\n", domain_name, strlen(domain_name));
@@ -174,6 +200,8 @@ int process_dns_packet(char* buffer, tHTable* rr_table, int connection_socket)
 			}
 			//fprintf(stderr, "_____________________________//\n");
 		}
+		free(answer_data);
+		free(answer_type);
 	}
 	return 0;
 }
@@ -181,7 +209,6 @@ int process_dns_packet(char* buffer, tHTable* rr_table, int connection_socket)
 void process_rr_data(char* dns_data, unsigned int data_offset, uint16_t rr_type, uint16_t rr_data_length, char** domain_name,
                      char** answer_type, char** answer_data, unsigned int max_len, tHTable* rr_table)
 {
-	//debug_data_print(dns_data);
 	if (rr_type == A)
 	{
 		inet_ntop(AF_INET, (dns_data + data_offset), *answer_data, INET_ADDRSTRLEN);
@@ -218,7 +245,7 @@ void process_rr_data(char* dns_data, unsigned int data_offset, uint16_t rr_type,
 		data_offset = get_offset_to_skip_rr_name(dns_data, data_offset);
 		get_domain_name(dns_data, data_offset, answer_data, 0, max_len);
 		data_offset = get_offset_to_skip_rr_name(dns_data, data_offset);
-		debug_data_print(dns_data + data_offset);
+		//debug_data_print(dns_data + data_offset);
 
 		sprintf(*domain_name, "%s SOA \"%s %s %zu %zu %zu %zu %zu\"", *domain_name, *answer_type, *answer_data, ntohl(*((uint32_t*) (dns_data + data_offset))),
 		        ntohl(*((uint32_t*) (dns_data + data_offset + 4))), ntohl(*((uint32_t*) (dns_data + data_offset + 8))),
@@ -258,7 +285,10 @@ void process_rr_data(char* dns_data, unsigned int data_offset, uint16_t rr_type,
 	}
 	else if (rr_type == DS)
 	{
-		b64_encode((dns_data + data_offset + 4), answer_data, (rr_data_length - 4));
+
+		for (int i = 0; i < (rr_data_length - 4); i++) {
+			sprintf((*answer_data) + i * 2, "%02X", ((uint8_t*) dns_data + data_offset + 4)[i]);
+		}
 		sprintf(*domain_name, "%s DS \"%d %d %d %s\"", *domain_name, ntohs(*((uint16_t*) (dns_data + data_offset))),
 		        *((uint8_t*) (dns_data + data_offset + 2)), *((uint8_t*) (dns_data + data_offset + 3)),
 		        *answer_data);
@@ -279,6 +309,7 @@ void process_rr_data(char* dns_data, unsigned int data_offset, uint16_t rr_type,
 		        ntohl(*((uint32_t*) (dns_data + data_offset + 12))), ntohs(*((uint16_t*) (dns_data + data_offset + 16))),
 		        *answer_type, *answer_data);
 		ht_process_rr(rr_table, *domain_name);
+		free(*answer_data);
 	}
 	else if (rr_type == NSEC)
 	{
@@ -295,18 +326,18 @@ void process_rr_data(char* dns_data, unsigned int data_offset, uint16_t rr_type,
 		sprintf(*domain_name, "%s DNSKEY \"%d %d %d %s\"", *domain_name, ntohs(*((uint16_t*) (dns_data + data_offset))),
 		        *((uint8_t*) (dns_data + data_offset + 2)), *((uint8_t*) (dns_data + data_offset + 3)), *answer_data);
 		ht_process_rr(rr_table, *domain_name);
+		free(*answer_data);
 	}
-
 }
 
-void print_dns_header(struct dns_hdr* dns_header)
+void print_dns_header(struct dns_hdr* dns_header) // Debug print
 {
 	fprintf(stderr, "DNS Header:\n");
-	//fprintf(stderr, "\t|-Identification : %04x\n", ntohs(dns_header->identification));
+	fprintf(stderr, "\t|-Identification : %04x\n", ntohs(dns_header->identification));
 	fprintf(stderr, "\t|-Total questions : %hu\n", ntohs(dns_header->total_questions));
-	//fprintf(stderr, "\t|-Total answer RRs : %hu\n", ntohs(dns_header->total_answer_RRs));
-	//fprintf(stderr, "\t|-Total authority RRs : %hu\n", ntohs(dns_header->total_authority_RRs));
-	//fprintf(stderr, "\t|-Total additional RRs : %hu\n", ntohs(dns_header->total_additional_RRs));
+	fprintf(stderr, "\t|-Total answer RRs : %hu\n", ntohs(dns_header->total_answer_RRs));
+	fprintf(stderr, "\t|-Total authority RRs : %hu\n", ntohs(dns_header->total_authority_RRs));
+	fprintf(stderr, "\t|-Total additional RRs : %hu\n", ntohs(dns_header->total_additional_RRs));
 }
 
 void get_domain_name(char* dns_data, unsigned int data_offset, char** domain_name, unsigned int index, unsigned int max_len)

@@ -39,6 +39,12 @@ int open_raw_socket()
 	return socket(AF_PACKET, SOCK_RAW, htons(ETH_P_IP));
 }
 
+// Open new udp connection socket
+int open_udp_socket()
+{
+	return socket(AF_INET, SOCK_DGRAM, 0);
+}
+
 // Gets index of given interface
 int get_interface_index(struct ifreq if_id, char* if_name, int connection_socket)
 {
@@ -61,7 +67,7 @@ unsigned long receive_packet(void* buffer, unsigned int packet_size, int connect
 	return recvfrom(connection_socket, buffer, packet_size, 0, NULL, NULL);
 }
 
-void print_ethernet_header(struct ether_header* ethernet_header)
+void print_ethernet_header(struct ether_header* ethernet_header) // Debug print
 {
 	fprintf(stdout, "\nEthernet Header:\n");
 	fprintf(stdout, "\t|-Source Address : %.2X:%.2X:%.2X:%.2X:%.2X:%.2X\n",ethernet_header->ether_shost[0],ethernet_header->ether_shost[1],ethernet_header->ether_shost[2],ethernet_header->ether_shost[3],ethernet_header->ether_shost[4],ethernet_header->ether_shost[5]);
@@ -69,7 +75,7 @@ void print_ethernet_header(struct ether_header* ethernet_header)
 	fprintf(stdout, "\t|-Protocol : %d\n",ethernet_header->ether_type);
 }
 
-void print_ip_header(struct iphdr* ip_header)
+void print_ip_header(struct iphdr* ip_header) // Debug print
 {
 	struct sockaddr_in source;
 	struct sockaddr_in destination;
@@ -98,4 +104,16 @@ void print_udp_header(struct udphdr* udp_header)
 	fprintf(stdout , "\t|-Destination Port : %d\n" , ntohs(udp_header->dest));
 	fprintf(stdout , "\t|-UDP Length : %d\n" , ntohs(udp_header->len));
 	fprintf(stdout , "\t|-UDP Checksum : %d\n" , ntohs(udp_header->check));
+}
+
+void get_timestamp(char* string_time)
+{
+	time_t atm;
+	struct tm gtm;
+	struct tm *ltm;
+
+	atm = time(NULL);
+	gtm = *(gmtime(&atm));
+	ltm = localtime(&atm);
+	strftime(string_time, 79, "%Y-%m-%dT%H:%M:%SZ", ltm); // Format for syslog message
 }
