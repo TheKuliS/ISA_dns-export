@@ -245,7 +245,7 @@ void process_rr_data(char* dns_data, unsigned int data_offset, uint16_t rr_type,
 		data_offset = get_offset_to_skip_rr_name(dns_data, data_offset);
 		//debug_data_print(dns_data + data_offset);
 
-		sprintf(*domain_name, "%s SOA \"%s %s %zu %zu %zu %zu %zu\"", *domain_name, *answer_type, *answer_data, ntohl(*((uint32_t*) (dns_data + data_offset))),
+		sprintf(*domain_name, "%s SOA \"%s %s %u %u %u %u %u\"", *domain_name, *answer_type, *answer_data, ntohl(*((uint32_t*) (dns_data + data_offset))),
 		        ntohl(*((uint32_t*) (dns_data + data_offset + 4))), ntohl(*((uint32_t*) (dns_data + data_offset + 8))),
 		        ntohl(*((uint32_t*) (dns_data + data_offset + 12))), ntohl(*((uint32_t*) (dns_data + data_offset + 16))));
 		ht_process_rr(rr_table, *domain_name);
@@ -301,7 +301,7 @@ void process_rr_data(char* dns_data, unsigned int data_offset, uint16_t rr_type,
 		unsigned int new_offset = get_offset_to_skip_rr_name((dns_data + data_offset + 18), data_offset);
 		//fprintf(stderr, "Dns: new: %d | data len: %d\n", new_offset, (rr_data_length - 18 - (new_offset - data_offset)));
 		b64_encode((const unsigned char*)(dns_data + new_offset + 18), answer_data, (rr_data_length - 18 - (new_offset - data_offset)));
-		sprintf(*domain_name, "%s RRSIG \"%d %d %d %zu %zu %zu %d %s %s\"", *domain_name, ntohs(*((uint16_t*) (dns_data + data_offset))),
+		sprintf(*domain_name, "%s RRSIG \"%d %d %d %u %u %u %d %s %s\"", *domain_name, ntohs(*((uint16_t*) (dns_data + data_offset))),
 		        *((uint8_t*) (dns_data + data_offset + 2)), *((uint8_t*) (dns_data + data_offset + 3)),
 		        ntohl(*((uint32_t*) (dns_data + data_offset + 4))), ntohl(*((uint32_t*) (dns_data + data_offset + 8))),
 		        ntohl(*((uint32_t*) (dns_data + data_offset + 12))), ntohs(*((uint16_t*) (dns_data + data_offset + 16))),
