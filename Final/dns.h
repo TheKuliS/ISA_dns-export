@@ -29,6 +29,9 @@
 #define DNSSECA 32768
 #define DNSSECV 32769
 
+// Mask
+#define MASK 0xc000
+
 #include "hash_table.h"
 
 struct dns_hdr
@@ -45,7 +48,7 @@ struct dns_hdr
 size_t b64_encoded_size(size_t inlen);
 void b64_encode(const unsigned char *in, char** out, size_t len);
 int process_dns_packet(char* buffer, tHTable* rr_table, int connection_socket, int syslog_socket,
-		struct sockaddr_in server_address, int seconds, int sflag);
+		struct sockaddr_in server_address, int seconds, int sflag, struct ifreq if_addr);
 void process_rr_data(char* dns_data, unsigned int data_offset, uint16_t rr_type, uint16_t rr_data_length, char** domain_name,
                      char** answer_type, char** answer_data, unsigned int max_len, tHTable* rr_table);
 void print_dns_header(struct dns_hdr* dns_header);

@@ -35,12 +35,9 @@ int HTSIZE = MAX_HTSIZE;
 int hashCode ( tKey key ) {
 	int retval = 1;
 	int keylen = strlen(key);
-	//fprintf(stderr, "key: '%s' (%p)\n", key, key);
-	//fprintf(stderr, "len: %d\n", keylen);
 	for ( int i=0; i<keylen; i++ )
 	{
 		retval += key[i];
-		//fprintf(stderr, "hashCode %d retval: %d | char: %c\n", i, retval, key[i]);
 	}
 
 	return ( retval % HTSIZE );
@@ -65,29 +62,18 @@ void htInit ( tHTable* ptrht ) {
 */
 
 tHTItem* htSearch ( tHTable* ptrht, tKey key ) {
-	//fprintf(stderr, "Hash_table: htSearch start\n");
-	//fprintf(stderr, "Hash_table: htSearch key: %s\n", key);
 	if (*ptrht == NULL || (*ptrht)[hashCode(key)] == NULL) { // Pokud nebyla tabulka inicialzována, nebo pokud hledaný prvek v tabulce není.
 		return NULL;
 	}
 	else {
-		tHTItem *hledany = (*ptrht)[hashCode(key)]; // Pomocná proměnná pro hledaný prvek.
-		//fprintf(stderr, "Hash_table: htSearch hashCode: %d | key: %s | key ptr: %p | key len: %d\n", hashCode(key), key, key, strlen(key));
-		//fprintf(stderr, "Hash_table: htSearch hledany: %d | key: %s | key ptr: %p | key len: %d\n", hashCode(hledany->key), hledany->key, hledany->key, strlen(hledany->key));
-		//fprintf(stderr, "Hash_table: htSearch (*ptrht)[hashCode(key)]: %d | key: %s | key ptr: %p | key len: %d\n", hashCode((*ptrht)[hashCode(key)]->key), (*ptrht)[hashCode(key)]->key, (*ptrht)[hashCode(key)]->key, strlen((*ptrht)[hashCode(key)]->key));
-		while (hledany != NULL) { // Dokud máme co hledat
-			//if (hledany->key == key) { // Pokud se shodují
+		tHTItem *hledany = (*ptrht)[hashCode(key)]; // Pomocná proměnná pro hledaný prvek.while (hledany != NULL) { // Dokud máme co hledat
 			if (strcmp(hledany->key, key) == 0) { // Pokud se shodují
-				//fprintf(stderr, "EQUAAAAAAAL!!!!!!!!!!!\n");
-				//fprintf(stderr, "Hash_table: htSearch key: %s\n", key);
 				return hledany; // Vracím ukazatel na daný prvek.
 			}
 			else {
-				//fprintf(stderr, "NOT ! EQUAAAAAAAL!!!!!!!!!!!\n");
 				hledany = hledany->ptrnext; // Jinak pokračuji dál v seznamu.
 			}
 		}
-	}
 	return NULL; // Pokud jsme nic nenalezli
 }
 
@@ -104,12 +90,9 @@ tHTItem* htSearch ( tHTable* ptrht, tKey key ) {
 **/
 
 void htInsert ( tHTable* ptrht, tKey key, tData data ) {
-	//fprintf(stderr, "Hash_table: htInsert start\n");
-	//fprintf(stderr, "Hash_table: htInsert key: %s\n", key);
 	if (*ptrht != NULL) {
 		tHTItem *vyhledany = htSearch(ptrht, key); // Vyhledání prvku.
 		unsigned int index = hashCode(key); // Index klíče
-		//fprintf(stderr, "Hash_table: htInsert hashCode: %d of key: %s\n", hashCode(key), key);
 
 		if (vyhledany == NULL) { // Prvek ještě neexistuje.
 			if ((*ptrht)[index] == NULL) { // Je prázdný.
@@ -117,7 +100,6 @@ void htInsert ( tHTable* ptrht, tKey key, tData data ) {
 				(*ptrht)[index]->key = key;
 				(*ptrht)[index]->data = data;
 				(*ptrht)[index]->ptrnext = NULL;
-				//fprintf(stderr, "Hash_table: New item: %s | Count: %d\n", (*ptrht)[index]->key, (*ptrht)[index]->data);
 			}
 			else { // Je zde nějaké synonymum.
 				vyhledany = malloc(sizeof(struct tHTItem));
@@ -125,14 +107,11 @@ void htInsert ( tHTable* ptrht, tKey key, tData data ) {
 				vyhledany->data = data;
 				vyhledany->ptrnext = (*ptrht)[index];
 				(*ptrht)[index] = vyhledany;
-				//fprintf(stderr, "Hash_table: Synonym %s | Count: %d\n", (*ptrht)[index]->key, (*ptrht)[index]->data);
 			}
 		}
 		else { // Prvek již existuje.
-			//if (vyhledany->key == key) { // Pokud se shodují
 			if (strcmp(vyhledany->key, key) == 0) { // Pokud se shodují
 				vyhledany->data = data; // Přepíšeme data.
-				//fprintf(stderr, "Hash_table: Exists %s | Count: %d\n", (*ptrht)[index]->key,  vyhledany->data);
 			}
 		}
 	}
@@ -179,7 +158,6 @@ void htDelete ( tHTable* ptrht, tKey key ) {
 		tHTItem *predchozi = NULL;
 
 		while (mazany != NULL) { // Dokud máme co procházet.
-			//if (mazany->key == key) { // Pokud jsme našli položku s uvedeným klíčem.
 			if (strcmp(mazany->key, key) == 0) { // Pokud se shodují
 				if (predchozi != NULL) { // Pokud jsme se ještě nedostali na konec.
 					predchozi->ptrnext = mazany->ptrnext;
@@ -225,22 +203,18 @@ void htClearAll ( tHTable* ptrht ) {
 
 void ht_process_rr(tHTable* ptrht, char* rr_string)
 {
-	//fprintf(stderr, "Hash_table: ht_process_rr start\n");
 	tHTItem* rr_item;
 
 	rr_item = htSearch(ptrht, rr_string);
 
 	if (rr_item == NULL)
 	{
-		//fprintf(stderr, "Hash_table: ht_process_rr new item: %s\n", rr_string);
 		htInsert(ptrht, rr_string, 1);
 	}
 	else
 	{
-		//fprintf(stderr, "Hash_table: ht_process_rr update item: %s\n", rr_string);
 		rr_item->data = rr_item->data + 1;
-		//htInsert(ptrht, rr_string, rr_item->data + 1);
-		//fprintf(stderr, "Hash_table: ht_process_rr rr_item->data: %d\n", rr_item->data);
+		free(rr_string);
 	}
 
 }
@@ -250,14 +224,10 @@ void ht_foreach(tHTable* ptrht, void (*item_callback)(tHTItem* item))
 	for(int i = 0; i < HTSIZE; i++)
 	{
 		tHTItem* processed_item = (*ptrht)[i];
-		int j = 0;
 		while (processed_item != NULL)
 		{
-			//fprintf(stderr, "%d | \n", i);
 			item_callback(processed_item);
 			processed_item = processed_item->ptrnext;
-			j++;
-			//fprintf(stderr, "Hash_table: ht_foreach: %d\n", j);
 		}
 	}
 }

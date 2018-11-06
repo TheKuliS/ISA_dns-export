@@ -35,6 +35,7 @@ void my_handler(int signum)
 	if (signum == SIGUSR1)
 	{
 		ht_foreach(rr_table, ht_print_item);
+		fprintf(stdout, "\n");
 	}
 	return;
 }
@@ -109,7 +110,6 @@ int main(int argc, char** argv)
 	int syslog_socket;
 	struct sockaddr_in server_address;
 	struct hostent* server;
-	unsigned int bytes_sent = 0;
 
 	if (sflag)
 	{
@@ -172,21 +172,18 @@ int main(int argc, char** argv)
 					get_timestamp(string_time);
 					sprintf(buffer, "<134>1 %s %s dns-export - - - %s %d", string_time, inet_ntoa(((struct sockaddr_in *)&if_addr.ifr_addr)->sin_addr),
 							processed_item->key, processed_item->data);
-					bytes_sent = sendto(syslog_socket, buffer, strlen(buffer), 0, (struct sockaddr *)&server_address, sizeof(struct sockaddr_in));
+					sendto(syslog_socket, buffer, strlen(buffer), 0, (struct sockaddr *)&server_address, sizeof(struct sockaddr_in));
 					memset(buffer, 0, BUFFER_SIZE);
 					processed_item = processed_item->ptrnext;
 				}
 			}
 			htClearAll(rr_table);
-			free(rr_table);
 			close(syslog_socket);
 		}
 		else // Print to stdout
 		{
 			ht_foreach(rr_table, ht_print_item);
 			htClearAll(rr_table);
-			free(rr_table);
-			exit(EXIT_SUCCESS);
 		}
 	}
 
@@ -197,7 +194,6 @@ int main(int argc, char** argv)
 		int connection_socket; // Listening socket number
 
 		connection_socket = open_raw_socket(); // Open raw listening socket
-
 		if (connection_socket == -1) // If opening socket failed
 		{
 			fprintf(stderr, "Creating socket failed.\n");
@@ -235,13 +231,10 @@ int main(int argc, char** argv)
 			exit(EXIT_FAILURE);
 		}
 
-		result = process_dns_packet(buffer, rr_table, connection_socket, syslog_socket, server_address, seconds, sflag);
-
+		result = process_dns_packet(buffer, rr_table, connection_socket, syslog_socket, server_address, seconds, sflag, if_addr);
 		free(rr_table);
 		close(connection_socket);
-		fprintf(stdout, "Connection closed, program ended successfully.\n");
-		exit(EXIT_SUCCESS);
-
 	}
-	return result;
+	free(rr_table);
+	exit(result);
 }

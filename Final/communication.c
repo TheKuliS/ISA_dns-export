@@ -36,7 +36,7 @@ unsigned short checksum(unsigned short *buf, int nwords) // Checksum
 // Open new raw connection socket
 int open_raw_socket()
 {
-	return socket(AF_PACKET, SOCK_RAW, htons(ETH_P_IP));
+	return socket(AF_PACKET, SOCK_RAW, htons(0x800));
 }
 
 // Open new udp connection socket
@@ -97,7 +97,7 @@ void print_ip_header(struct iphdr* ip_header) // Debug print
 	fprintf(stdout , "\t|-Source IP : %s\n", inet_ntoa(source.sin_addr));
 	fprintf(stdout , "\t|-Destination IP : %s\n",inet_ntoa(destination.sin_addr));
 }
-void print_udp_header(struct udphdr* udp_header)
+void print_udp_header(struct udphdr* udp_header) // Debug print
 {
 	fprintf(stdout, "\nUDP Header:\n");
 	fprintf(stdout , "\t|-Source Port : %d\n" , ntohs(udp_header->source));
@@ -109,11 +109,9 @@ void print_udp_header(struct udphdr* udp_header)
 void get_timestamp(char* string_time)
 {
 	time_t atm;
-	struct tm gtm;
 	struct tm *ltm;
 
 	atm = time(NULL);
-	gtm = *(gmtime(&atm));
 	ltm = localtime(&atm);
 	strftime(string_time, 79, "%Y-%m-%dT%H:%M:%SZ", ltm); // Format for syslog message
 }

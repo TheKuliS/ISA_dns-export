@@ -32,7 +32,6 @@
 int process_pcap_file(char* filename, char* buffer, tHTable* rr_table)
 {
 	FILE* pcap_file;
-	struct ether_header* ethernet_header = (struct ether_header *) buffer;
 	struct iphdr* ip_header = (struct iphdr *) (buffer + sizeof(struct ether_header));
 	struct udphdr* udp_header = (struct udphdr *) (buffer + sizeof(struct iphdr) + sizeof(struct ether_header));
 	struct dns_hdr* dns_header = (struct dns_hdr *) (buffer + sizeof(struct udphdr) + sizeof(struct iphdr) + sizeof(struct ether_header));
@@ -41,25 +40,27 @@ int process_pcap_file(char* filename, char* buffer, tHTable* rr_table)
 	char* answer_type; // Type of resource record
 	char* answer_data; // Data of specific resource record
 	pcap_file = fopen(filename, "r");
+
+	if (pcap_file == NULL)
+	{
+		free(rr_table);
+		exit(EXIT_FAILURE);
+	}
+
 	char* hdr = malloc(sizeof(pcap_hdr_t));
 	fread(hdr, sizeof(pcap_hdr_t), 1, pcap_file);
 
-	while (1) // Program has to be in loop to receive packets till someone kills the program
+	while (1)
 	{
 		pcaprec_hdr_t packet_header;
-		if(!fread(&packet_header, sizeof(pcaprec_hdr_t), 1, pcap_file))
+		if(!fread(&packet_header, sizeof(pcaprec_hdr_t), 1, pcap_file)) // Read header and get length of packet
 			break;
-		if(!fread(buffer, packet_header.incl_len, 1, pcap_file))
+		if(!fread(buffer, packet_header.incl_len, 1, pcap_file)) // Read dns packet
 			break;
-		//fprintf(stderr, "Main: Bytes received: %lu\n", bytes_received);
-		//memset(domain_name, 0, max_len);
-		//memset(answer_data, 0, max_len);
-		//memset(answer_type, 0, max_len);
+
 		uint16_t offset = 0; // Offset is a 16bit integer which is used to move in DNS data
 		uint16_t rr_type; // Type of resource record
 		uint16_t rr_data_length; // Data length of specific resource record
-
-		//print_ip_header(ip_header);
 
 		//UDP
 		if(ntohs(udp_header->source) == DNS_PORT && (unsigned int)ip_header->protocol == UDP) // Filter incoming packets only on DNS port
@@ -77,9 +78,6 @@ int process_pcap_file(char* filename, char* buffer, tHTable* rr_table)
 				domain_name = malloc(sizeof(char) * 1000);
 				answer_data = malloc(sizeof(char) * 500);
 				answer_type = malloc(sizeof(char) * 500);
-				//memset(domain_name, 0, 200);
-				//memset(answer_data, 0, 100);
-				//memset(answer_type, 0, 100);
 
 				if (domain_name == NULL || answer_data == NULL || answer_type == NULL)
 				{
@@ -117,11 +115,8 @@ int process_pcap_file(char* filename, char* buffer, tHTable* rr_table)
 			}
 			//fprintf(stderr, "_____________________________//\n");
 		}
-		free(domain_name);
-		free(answer_data);
-		free(answer_type);
 	}
 	free(hdr);
 	fclose(pcap_file);
-	return 0;
+	return EXIT_SUCCESS;
 }
