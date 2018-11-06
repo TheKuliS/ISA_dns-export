@@ -106,42 +106,53 @@ int main(int argc, char** argv)
 	}
 
 	// Socket variables
-	struct ifreq if_addr;
 	int syslog_socket;
+	int ip_version = 0;
 	struct sockaddr_in server_address;
+	struct sockaddr_in6 server_address6;
 	struct hostent* server;
+	char hostname[256];
 
 	if (sflag)
 	{
 		// Get server info
-		if((server = gethostbyname(syslog_server)) == NULL)
+		if((server = gethostbyname(syslog_server)) != NULL)
 		{
-			fprintf(stderr, "Get host by name failed.\n");
-			exit(EXIT_FAILURE);
+			memset(&server_address, 0, sizeof(server_address)); // Zeroing server_address
+			server_address.sin_family = AF_INET; // IPv4
+			server_address.sin_port = htons(SYSLOG_PORT); // Port number
+			memcpy((char *)&server_address.sin_addr.s_addr, (char *)server->h_addr, server->h_length); // server_address initial
+			syslog_socket = open_udp_socket(AF_INET);
+
+			if (syslog_socket <= 0) // If opening socket failed
+			{
+				fprintf(stderr, "Creating socket failed.\n");
+				close(syslog_socket);
+				exit(EXIT_FAILURE);
+			}
+			ip_version = AF_INET;
+		}
+		else
+		{
+			memset(&server_address6, 0, sizeof(server_address6)); // Zeroing server_address
+			server_address6.sin6_family = AF_INET6; // IPv6
+			server_address6.sin6_port = htons(SYSLOG_PORT); // Port number
+			inet_pton(AF_INET6, syslog_server, (char *)&server_address6.sin6_addr.s6_addr);
+			syslog_socket = open_udp_socket(AF_INET6);
+
+			if (syslog_socket <= 0) // If opening socket failed
+			{
+				fprintf(stderr, "Creating socket failed.\n");
+				close(syslog_socket);
+				exit(EXIT_FAILURE);
+			}
+			ip_version = AF_INET6;
 		}
 
-		memset(&server_address, 0, sizeof(server_address)); // Zeroing server_address
-		server_address.sin_family = AF_INET; // IPv4
-		server_address.sin_port = htons(SYSLOG_PORT); // Port number
-		memcpy((char *)&server_address.sin_addr.s_addr, (char *)server->h_addr, server->h_length); // server_address initial
 
-		syslog_socket = open_udp_socket();
-		if (syslog_socket <= 0) // If opening socket failed
-		{
-			fprintf(stderr, "Creating socket failed.\n");
-			close(syslog_socket);
-			exit(EXIT_FAILURE);
-		}
 
-		// Get my interface info
-		memset(&if_addr, 0, sizeof(struct ifreq));
-		strncpy(if_addr.ifr_name, "eth0", 5);
-		if (ioctl(syslog_socket, SIOCGIFADDR, &if_addr) == -1)
-		{
-			fprintf(stderr, "Getting interface ip failed.\n");
-			close(syslog_socket);
-			exit(EXIT_FAILURE);
-		}
+		hostname[255] = '\0';
+		gethostname(hostname, 255);
 	}
 
 	char buffer[BUFFER_SIZE]; // Buffer for receiving data
@@ -170,9 +181,11 @@ int main(int argc, char** argv)
 					char string_time[80];
 					memset(string_time, 0, 80);
 					get_timestamp(string_time);
-					sprintf(buffer, "<134>1 %s %s dns-export - - - %s %d", string_time, inet_ntoa(((struct sockaddr_in *)&if_addr.ifr_addr)->sin_addr),
-							processed_item->key, processed_item->data);
-					sendto(syslog_socket, buffer, strlen(buffer), 0, (struct sockaddr *)&server_address, sizeof(struct sockaddr_in));
+					sprintf(buffer, "<134>1 %s %s dns-export - - - %s %d", string_time, hostname, processed_item->key, processed_item->data);
+					if (ip_version == AF_INET)
+						sendto(syslog_socket, buffer, strlen(buffer), 0, (struct sockaddr *)&server_address, sizeof(struct sockaddr_in));
+					else if (ip_version == AF_INET6)
+						sendto(syslog_socket, buffer, strlen(buffer), 0, (struct sockaddr *)&server_address6, sizeof(struct sockaddr_in6));
 					memset(buffer, 0, BUFFER_SIZE);
 					processed_item = processed_item->ptrnext;
 				}
@@ -202,8 +215,7 @@ int main(int argc, char** argv)
 			exit(EXIT_FAILURE);
 		}
 
-		// Bind socket to device
-		if (setsockopt(connection_socket, SOL_SOCKET, SO_BINDTODEVICE, if_name, strlen(if_name)+1) == -1)
+		if (setsockopt(connection_socket, SOL_SOCKET, SO_BINDTODEVICE, if_name, strlen(if_name)+1) == -1) // Bind socket to device
 		{
 			fprintf(stderr, "Binding socket failed.\n");
 			free(rr_table);
@@ -220,8 +232,8 @@ int main(int argc, char** argv)
 			exit(EXIT_FAILURE);
 		}
 
-		struct timeval recv_timeout;
-		recv_timeout.tv_sec = 4;
+		struct timeval recv_timeout; // Timeout struct for response
+		recv_timeout.tv_sec = 4; // 4 seconds
 		recv_timeout.tv_usec = 0;
 		if (setsockopt(connection_socket, SOL_SOCKET, SO_RCVTIMEO, &recv_timeout, sizeof(struct timeval)) == -1) // Timeout responses
 		{
@@ -231,8 +243,9 @@ int main(int argc, char** argv)
 			exit(EXIT_FAILURE);
 		}
 
-		result = process_dns_packet(buffer, rr_table, connection_socket, syslog_socket, server_address, seconds, sflag, if_addr);
-		free(rr_table);
+		result = process_dns_packet(buffer, rr_table, connection_socket, syslog_socket, server_address, seconds, sflag, hostname,
+				ip_version, server_address6);
+
 		close(connection_socket);
 	}
 	free(rr_table);

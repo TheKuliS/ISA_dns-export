@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="fffafb68-62c8-4958-a1b1-70c37189bfc3" name="merlin" url="http://merlin.fit.vutbr.cz">
+        <fileTransfer host="merlin.fit.vutbr.cz" port="22" rootFolder="/homes/eva/xk/xkulda01" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" shareSSLContext="true" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

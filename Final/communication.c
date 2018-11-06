@@ -40,9 +40,9 @@ int open_raw_socket()
 }
 
 // Open new udp connection socket
-int open_udp_socket()
+int open_udp_socket(int version)
 {
-	return socket(AF_INET, SOCK_DGRAM, 0);
+	return socket(version, SOCK_DGRAM, 0);
 }
 
 // Gets index of given interface

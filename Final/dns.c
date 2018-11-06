@@ -95,7 +95,8 @@ void debug_data_print(unsigned char *data) // Debug print
 }
 
 int process_dns_packet(char* buffer, tHTable* rr_table, int connection_socket, int syslog_socket,
-		struct sockaddr_in server_address, int seconds, int sflag, struct ifreq if_addr)
+		struct sockaddr_in server_address, int seconds, int sflag, char* hostname, int ip_version,
+        struct sockaddr_in6 server_address6)
 {
 	struct iphdr* ip_header = (struct iphdr *) (buffer + sizeof(struct ether_header));
 	struct udphdr* udp_header = (struct udphdr *) (buffer + sizeof(struct iphdr) + sizeof(struct ether_header));
@@ -123,9 +124,12 @@ int process_dns_packet(char* buffer, tHTable* rr_table, int connection_socket, i
 				{
 					char string_time[80];
 					get_timestamp(string_time);
-					sprintf(buffer, "<134>1 %s %s dns-export - - - %s %d", string_time, inet_ntoa(((struct sockaddr_in *)&if_addr.ifr_addr)->sin_addr),
+					sprintf(buffer, "<134>1 %s %s dns-export - - - %s %d", string_time, hostname,
 							processed_item->key, processed_item->data);
-					sendto(syslog_socket, buffer, strlen(buffer), 0, (struct sockaddr *)&server_address, sizeof(struct sockaddr_in));
+					if (ip_version == AF_INET)
+						sendto(syslog_socket, buffer, strlen(buffer), 0, (struct sockaddr *)&server_address, sizeof(struct sockaddr_in));
+					else if (ip_version == AF_INET6)
+						sendto(syslog_socket, buffer, strlen(buffer), 0, (struct sockaddr *)&server_address6, sizeof(struct sockaddr_in6));
 					memset(buffer, 0, BUFFER_SIZE);
 					processed_item = processed_item->ptrnext;
 				}
@@ -347,14 +351,21 @@ void get_domain_name(char* dns_data, unsigned int data_offset, char** domain_nam
 
 	//fprintf(stderr, "Dns: data offset: %u\n", data_offset);
 	//fprintf(stderr, "Dns: new data offset: %u\n", new_offset);
-	//debug_data_print(dns_data);
+	//debug_data_print((unsigned char*)dns_data);
 	//debug_data_print(name_length);
 
 	//fprintf(stderr, "*name_length = %d\n", (uint8_t) *name_length);
 	if (*name_length == 0)
 	{
-		//fprintf(stderr, "DOMAIN NAME END\n");
-		(*domain_name)[index - 1] = '\0';
+		if (index == 0)
+		{
+			(*domain_name)[index] = '\0';
+		}
+		else
+		{
+			(*domain_name)[index - 1] = '\0';
+		}
+		//fprintf(stderr, "Dns: Index - 1: %d \n", index - 1);
 		return;
 	}
 
@@ -373,7 +384,7 @@ void get_domain_name(char* dns_data, unsigned int data_offset, char** domain_nam
 	if ((index + *name_length + 1) >= max_len)
 	{
 		//fprintf(stderr, "*name_length = %d\n", *name_length);
-		//fprintf(stderr, "index = %d\n", index);
+		//fprintf(stderr, "Dns: index = %d\n", index);
 		//fprintf(stderr, "index + *name_length = %d >= %d\n", (index + *name_length + 1), max_len);
 		max_len += (index + *name_length + 1);
 		//fprintf(stderr, "Dns: new max_len: %u\n", max_len);
