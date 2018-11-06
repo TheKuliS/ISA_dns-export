@@ -36,6 +36,7 @@ int process_pcap_file(char* filename, char* buffer, tHTable* rr_table)
 	struct udphdr* udp_header = (struct udphdr *) (buffer + sizeof(struct iphdr) + sizeof(struct ether_header));
 	struct dns_hdr* dns_header = (struct dns_hdr *) (buffer + sizeof(struct udphdr) + sizeof(struct iphdr) + sizeof(struct ether_header));
 	char* dns_data = (char *) (buffer + sizeof(struct dns_hdr) + sizeof(struct udphdr) + sizeof(struct iphdr) + sizeof(struct ether_header));
+	char* final_answer; // Final string
 	char* domain_name; // Domain name of DNS record
 	char* answer_type; // Type of resource record
 	char* answer_data; // Data of specific resource record
@@ -75,12 +76,14 @@ int process_pcap_file(char* filename, char* buffer, tHTable* rr_table)
 			//fprintf(stderr, "Main: skip query offset: %u\n", offset);
 			//fprintf(stderr, "Main: answer + authority: %d\n", (ntohs(dns_header->total_answer_RRs) + ntohs(dns_header->total_authority_RRs)));
 			for (int i = 0; i < ntohs(dns_header->total_answer_RRs) + ntohs(dns_header->total_authority_RRs); i++) {
-				domain_name = malloc(sizeof(char) * 1000);
-				answer_data = malloc(sizeof(char) * 500);
-				answer_type = malloc(sizeof(char) * 500);
+				final_answer = malloc(sizeof(char) * 1200);
+				domain_name = malloc(sizeof(char) * 400);
+				answer_data = malloc(sizeof(char) * 400);
+				answer_type = malloc(sizeof(char) * 400);
 
 				if (domain_name == NULL || answer_data == NULL || answer_type == NULL)
 				{
+					free(final_answer);
 					free(answer_data);
 					free(answer_type);
 					free(domain_name);
@@ -93,7 +96,7 @@ int process_pcap_file(char* filename, char* buffer, tHTable* rr_table)
 				//fprintf(stderr, "Main: answer index: %d\n", i);
 				//fprintf(stderr, "before domain_name: %p\n", domain_name);
 				//debug_data_print(dns_data + offset);
-				get_domain_name(dns_data, offset, &domain_name, 0, 1000); // Get domain name of i-answer
+				get_domain_name(dns_data, offset, &domain_name, 0, 400); // Get domain name of i-answer
 				//fprintf(stderr, "Main: Domain name: %s | %d\n", domain_name, strlen(domain_name));
 				//fprintf(stderr, "after domain_name: %p\n", domain_name);
 
@@ -105,7 +108,7 @@ int process_pcap_file(char* filename, char* buffer, tHTable* rr_table)
 				get_rr_data_length(dns_data, offset, &rr_data_length); // Get data length of i-answer
 				//fprintf(stderr, "Main: RR data length: %d\n", rr_data_length);
 				// Process specific data of i-answer
-				process_rr_data(dns_data, (offset + 10), rr_type, rr_data_length, &domain_name, &answer_type, &answer_data, 500, rr_table);
+				process_rr_data(dns_data, (offset + 10), rr_type, rr_data_length, &domain_name, &final_answer, &answer_type, &answer_data, 400, rr_table);
 				offset += rr_data_length + 10; // Get offset to point to next answer
 				//fprintf(stderr, "Main: skipped answer offset: %u\n", offset);
 				//fprintf(stderr, "Main: Answer: %s | %d\n", domain_name, strlen(domain_name));

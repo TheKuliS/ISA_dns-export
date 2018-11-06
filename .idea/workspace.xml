@@ -13,13 +13,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="70f5ca2e-5881-4be9-a172-3ea38472620d" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Final/communication.c" beforeDir="false" afterPath="$PROJECT_DIR$/Final/communication.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Final/dns-export" beforeDir="false" afterPath="$PROJECT_DIR$/Final/dns-export" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Final/dns.c" beforeDir="false" afterPath="$PROJECT_DIR$/Final/dns.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Final/dns.h" beforeDir="false" afterPath="$PROJECT_DIR$/Final/dns.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Final/hash_table.c" beforeDir="false" afterPath="$PROJECT_DIR$/Final/hash_table.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Final/main.c" beforeDir="false" afterPath="$PROJECT_DIR$/Final/main.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Final/pcap.c" beforeDir="false" afterPath="$PROJECT_DIR$/Final/pcap.c" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -44,26 +42,29 @@
       <usages-collector id="statistics.file.extensions.open">
         <counts>
           <entry key="c" value="33" />
+          <entry key="gitignore" value="1" />
           <entry key="h" value="13" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.open">
         <counts>
           <entry key="ObjectiveC" value="46" />
+          <entry key="PLAIN_TEXT" value="1" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="c" value="16989" />
-          <entry key="h" value="2360" />
-          <entry key="txt" value="587" />
+          <entry key="c" value="17159" />
+          <entry key="gitignore" value="10" />
+          <entry key="h" value="2373" />
+          <entry key="txt" value="596" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.cidr.testingFrameworks.usages" />
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="ObjectiveC" value="19349" />
-          <entry key="PLAIN_TEXT" value="587" />
+          <entry key="ObjectiveC" value="19532" />
+          <entry key="PLAIN_TEXT" value="606" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.vcs.git.usages" />
@@ -98,20 +99,20 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Final/pcap.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="112">
-              <caret line="33" column="20" selection-start-line="33" selection-start-column="20" selection-end-line="33" selection-end-column="20" />
+            <state relative-caret-position="350">
+              <caret line="110" column="109" selection-start-line="110" selection-start-column="109" selection-end-line="110" selection-end-column="109" />
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Final/dns.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="728">
-              <caret line="302" column="41" selection-start-line="302" selection-start-column="41" selection-end-line="302" selection-end-column="41" />
+            <state relative-caret-position="238">
+              <caret line="192" column="82" lean-forward="true" selection-start-line="192" selection-start-column="82" selection-end-line="192" selection-end-column="111" />
               <folding>
                 <element signature="e#849#1063#0" />
                 <element signature="e#1828#1995#0" />
@@ -132,8 +133,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Final/dns.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="532">
-              <caret line="48" column="16" lean-forward="true" selection-start-line="48" selection-start-column="16" selection-end-line="48" selection-end-column="35" />
+            <state relative-caret-position="546">
+              <caret line="52" column="21" selection-start-line="52" selection-start-column="21" selection-end-line="52" selection-end-column="42" />
             </state>
           </provider>
         </entry>
@@ -167,9 +168,10 @@
         <option value="$PROJECT_DIR$/Final/hash_table.c" />
         <option value="$PROJECT_DIR$/Final/communication.c" />
         <option value="$PROJECT_DIR$/Final/main.c" />
-        <option value="$PROJECT_DIR$/Final/pcap.c" />
+        <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/Final/dns.h" />
         <option value="$PROJECT_DIR$/Final/dns.c" />
+        <option value="$PROJECT_DIR$/Final/pcap.c" />
       </list>
     </option>
   </component>
@@ -284,7 +286,7 @@
       <workItem from="1541099595464" duration="1323000" />
       <workItem from="1541345317898" duration="25666000" />
       <workItem from="1541449659498" duration="10490000" />
-      <workItem from="1541496096687" duration="4431000" />
+      <workItem from="1541496096687" duration="6698000" />
     </task>
     <task id="LOCAL-00001" summary="Creating socket">
       <created>1539031616824</created>
@@ -384,17 +386,31 @@
       <option name="project" value="LOCAL" />
       <updated>1541374645406</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="freeing more memory">
+      <created>1541500545729</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1541500545730</updated>
+    </task>
+    <task id="LOCAL-00016" summary="%zu -&gt; %u">
+      <created>1541501137802</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1541501137802</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="318430000" />
+    <option name="totallyTimeSpent" value="320697000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.19865772" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.19865772" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -436,7 +452,8 @@
     <MESSAGE value="DNSSEC records remain, offset rework in progress" />
     <MESSAGE value="parsing parameters, pcap done" />
     <MESSAGE value="freeing more memory" />
-    <option name="LAST_COMMIT_MESSAGE" value="freeing more memory" />
+    <MESSAGE value="%zu -&gt; %u" />
+    <option name="LAST_COMMIT_MESSAGE" value="%zu -&gt; %u" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://E:/FIT_VUT/4th_semester/IPK/project1/final/ipk-client.c" />
@@ -481,13 +498,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Final/main.c">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="336">
-          <caret line="168" column="17" selection-start-line="168" selection-start-column="17" selection-end-line="168" selection-end-column="17" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Final/communication.c">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1078">
@@ -502,13 +512,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Final/pcap.c">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="112">
-          <caret line="33" column="20" selection-start-line="33" selection-start-column="20" selection-end-line="33" selection-end-column="20" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Final/hash_table.c">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="14">
@@ -516,21 +519,42 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/.gitignore">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="596">
+          <caret line="52" column="10" selection-start-line="52" selection-start-column="10" selection-end-line="52" selection-end-column="10" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Final/main.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="336">
+          <caret line="168" column="17" selection-start-line="168" selection-start-column="17" selection-end-line="168" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/Final/dns.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="532">
-          <caret line="48" column="16" lean-forward="true" selection-start-line="48" selection-start-column="16" selection-end-line="48" selection-end-column="35" />
+        <state relative-caret-position="546">
+          <caret line="52" column="21" selection-start-line="52" selection-start-column="21" selection-end-line="52" selection-end-column="42" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/Final/dns.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="728">
-          <caret line="302" column="41" selection-start-line="302" selection-start-column="41" selection-end-line="302" selection-end-column="41" />
+        <state relative-caret-position="238">
+          <caret line="192" column="82" lean-forward="true" selection-start-line="192" selection-start-column="82" selection-end-line="192" selection-end-column="111" />
           <folding>
             <element signature="e#849#1063#0" />
             <element signature="e#1828#1995#0" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Final/pcap.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="350">
+          <caret line="110" column="109" selection-start-line="110" selection-start-column="109" selection-end-line="110" selection-end-column="109" />
         </state>
       </provider>
     </entry>

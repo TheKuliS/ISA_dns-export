@@ -50,7 +50,7 @@ void b64_encode(const unsigned char *in, char** out, size_t len);
 int process_dns_packet(char* buffer, tHTable* rr_table, int connection_socket, int syslog_socket,
 		struct sockaddr_in server_address, int seconds, int sflag, struct ifreq if_addr);
 void process_rr_data(char* dns_data, unsigned int data_offset, uint16_t rr_type, uint16_t rr_data_length, char** domain_name,
-                     char** answer_type, char** answer_data, unsigned int max_len, tHTable* rr_table);
+                     char** final_answer, char** answer_type, char** answer_data, unsigned int max_len, tHTable* rr_table);
 void print_dns_header(struct dns_hdr* dns_header);
 void get_domain_name(char* dns_data, unsigned int data_offset, char** domain_name, unsigned int index, unsigned int max_len);
 void debug_data_print(unsigned char *data);

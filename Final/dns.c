@@ -101,6 +101,7 @@ int process_dns_packet(char* buffer, tHTable* rr_table, int connection_socket, i
 	struct udphdr* udp_header = (struct udphdr *) (buffer + sizeof(struct iphdr) + sizeof(struct ether_header));
 	struct dns_hdr* dns_header = (struct dns_hdr *) (buffer + sizeof(struct udphdr) + sizeof(struct iphdr) + sizeof(struct ether_header));
 	char* dns_data = (char *) (buffer + sizeof(struct dns_hdr) + sizeof(struct udphdr) + sizeof(struct iphdr) + sizeof(struct ether_header));
+	char* final_answer; // Final string
 	char* domain_name; // Domain name of DNS record
 	char* answer_type; // Type of resource record
 	char* answer_data; // Data of specific resource record
@@ -158,15 +159,14 @@ int process_dns_packet(char* buffer, tHTable* rr_table, int connection_socket, i
 			//fprintf(stderr, "Main: skip query offset: %u\n", offset);
 			//fprintf(stderr, "Main: answer + authority: %d\n", (ntohs(dns_header->total_answer_RRs) + ntohs(dns_header->total_authority_RRs)));
 			for (int i = 0; i < ntohs(dns_header->total_answer_RRs) + ntohs(dns_header->total_authority_RRs); i++) {
-				domain_name = malloc(sizeof(char) * 1000);
-				answer_data = malloc(sizeof(char) * 500);
-				answer_type = malloc(sizeof(char) * 500);
-				//memset(domain_name, 0, 200);
-				//memset(answer_data, 0, 100);
-				//memset(answer_type, 0, 100);
+				final_answer = malloc(sizeof(char) * 1200);
+				domain_name = malloc(sizeof(char) * 400);
+				answer_data = malloc(sizeof(char) * 400);
+				answer_type = malloc(sizeof(char) * 400);
 
 				if (domain_name == NULL || answer_data == NULL || answer_type == NULL)
 				{
+					free(final_answer);
 					free(answer_data);
 					free(answer_type);
 					free(domain_name);
@@ -178,7 +178,7 @@ int process_dns_packet(char* buffer, tHTable* rr_table, int connection_socket, i
 				//fprintf(stderr, "Main: answer index: %d\n", i);
 				//fprintf(stderr, "before domain_name: %p\n", domain_name);
 				//debug_data_print(dns_data + offset);
-				get_domain_name(dns_data, offset, &domain_name, 0, 1000); // Get domain name of i-answer
+				get_domain_name(dns_data, offset, &domain_name, 0, 400); // Get domain name of i-answer
 				//fprintf(stderr, "Main: Domain name: %s | %d\n", domain_name, strlen(domain_name));
 				//fprintf(stderr, "after domain_name: %p\n", domain_name);
 
@@ -190,7 +190,7 @@ int process_dns_packet(char* buffer, tHTable* rr_table, int connection_socket, i
 				get_rr_data_length(dns_data, offset, &rr_data_length); // Get data length of i-answer
 				//fprintf(stderr, "Main: RR data length: %d\n", rr_data_length);
 				// Process specific data of i-answer
-				process_rr_data(dns_data, (offset + 10), rr_type, rr_data_length, &domain_name, &answer_type, &answer_data, 500, rr_table);
+				process_rr_data(dns_data, (offset + 10), rr_type, rr_data_length, &domain_name, &final_answer, &answer_type, &answer_data, 400, rr_table);
 				offset += rr_data_length + 10; // Get offset to point to next answer
 				//fprintf(stderr, "Main: skipped answer offset: %u\n", offset);
 				//fprintf(stderr, "Main: Answer: %s | %d\n", domain_name, strlen(domain_name));
@@ -205,37 +205,37 @@ int process_dns_packet(char* buffer, tHTable* rr_table, int connection_socket, i
 }
 
 void process_rr_data(char* dns_data, unsigned int data_offset, uint16_t rr_type, uint16_t rr_data_length, char** domain_name,
-                     char** answer_type, char** answer_data, unsigned int max_len, tHTable* rr_table)
+                     char** final_answer, char** answer_type, char** answer_data, unsigned int max_len, tHTable* rr_table)
 {
 	if (rr_type == A)
 	{
 		inet_ntop(AF_INET, (dns_data + data_offset), *answer_data, INET_ADDRSTRLEN);
-		sprintf(*domain_name, "%s A %s", *domain_name, *answer_data);
-		ht_process_rr(rr_table, *domain_name);
+		sprintf(*final_answer, "%s A %s", *domain_name, *answer_data);
+		ht_process_rr(rr_table, *final_answer);
 	}
 	else if (rr_type == AAAA)
 	{
 		inet_ntop(AF_INET6, (dns_data + data_offset), *answer_data, INET6_ADDRSTRLEN);
-		sprintf(*domain_name, "%s AAAA %s", *domain_name, *answer_data);
-		ht_process_rr(rr_table, *domain_name);
+		sprintf(*final_answer, "%s AAAA %s", *domain_name, *answer_data);
+		ht_process_rr(rr_table, *final_answer);
 	}
 	else if (rr_type == NS)
 	{
 		get_domain_name(dns_data, data_offset, answer_data, 0, max_len);
-		sprintf(*domain_name, "%s NS %s", *domain_name, *answer_data);
-		ht_process_rr(rr_table, *domain_name);
+		sprintf(*final_answer, "%s NS %s", *domain_name, *answer_data);
+		ht_process_rr(rr_table, *final_answer);
 	}
 	else if (rr_type == CNAME)
 	{
 		get_domain_name(dns_data, data_offset, answer_data, 0, max_len);
-		sprintf(*domain_name, "%s CNAME %s", *domain_name, *answer_data);
-		ht_process_rr(rr_table, *domain_name);
+		sprintf(*final_answer, "%s CNAME %s", *domain_name, *answer_data);
+		ht_process_rr(rr_table, *final_answer);
 	}
 	else if (rr_type == PTR)
 	{
 		get_domain_name(dns_data, data_offset, answer_data, 0, max_len);
-		sprintf(*domain_name, "%s PTR %s", *domain_name, *answer_data);
-		ht_process_rr(rr_table, *domain_name);
+		sprintf(*final_answer, "%s PTR %s", *domain_name, *answer_data);
+		ht_process_rr(rr_table, *final_answer);
 	}
 	else if (rr_type == SOA)
 	{
@@ -245,16 +245,16 @@ void process_rr_data(char* dns_data, unsigned int data_offset, uint16_t rr_type,
 		data_offset = get_offset_to_skip_rr_name(dns_data, data_offset);
 		//debug_data_print(dns_data + data_offset);
 
-		sprintf(*domain_name, "%s SOA \"%s %s %u %u %u %u %u\"", *domain_name, *answer_type, *answer_data, ntohl(*((uint32_t*) (dns_data + data_offset))),
+		sprintf(*final_answer, "%s SOA \"%s %s %u %u %u %u %u\"", *domain_name, *answer_type, *answer_data, ntohl(*((uint32_t*) (dns_data + data_offset))),
 		        ntohl(*((uint32_t*) (dns_data + data_offset + 4))), ntohl(*((uint32_t*) (dns_data + data_offset + 8))),
 		        ntohl(*((uint32_t*) (dns_data + data_offset + 12))), ntohl(*((uint32_t*) (dns_data + data_offset + 16))));
-		ht_process_rr(rr_table, *domain_name);
+		ht_process_rr(rr_table, *final_answer);
 	}
 	else if (rr_type == MX)
 	{
 		get_domain_name(dns_data, (data_offset + 2), answer_data, 0, max_len);
-		sprintf(*domain_name, "%s MX \"%d %s\"", *domain_name, ntohs(*((uint16_t*) (dns_data + data_offset))), *answer_data);
-		ht_process_rr(rr_table, *domain_name);
+		sprintf(*final_answer, "%s MX \"%d %s\"", *domain_name, ntohs(*((uint16_t*) (dns_data + data_offset))), *answer_data);
+		ht_process_rr(rr_table, *final_answer);
 	}
 	else if (rr_type == TXT)
 	{
@@ -278,8 +278,8 @@ void process_rr_data(char* dns_data, unsigned int data_offset, uint16_t rr_type,
 			(*answer_data)[i] = dns_data[data_offset + i + 1];
 			//fprintf(stderr, "%c", dns_data[data_offset + i + 1]);
 		}
-		sprintf(*domain_name, "%s TXT \"%s\"", *domain_name, *answer_data);
-		ht_process_rr(rr_table, *domain_name);
+		sprintf(*final_answer, "%s TXT \"%s\"", *domain_name, *answer_data);
+		ht_process_rr(rr_table, *final_answer);
 	}
 	else if (rr_type == DS)
 	{
@@ -287,10 +287,10 @@ void process_rr_data(char* dns_data, unsigned int data_offset, uint16_t rr_type,
 		for (int i = 0; i < (rr_data_length - 4); i++) {
 			sprintf((*answer_data) + i * 2, "%02X", ((uint8_t*) dns_data + data_offset + 4)[i]);
 		}
-		sprintf(*domain_name, "%s DS \"%d %d %d %s\"", *domain_name, ntohs(*((uint16_t*) (dns_data + data_offset))),
+		sprintf(*final_answer, "%s DS \"%d %d %d %s\"", *domain_name, ntohs(*((uint16_t*) (dns_data + data_offset))),
 		        *((uint8_t*) (dns_data + data_offset + 2)), *((uint8_t*) (dns_data + data_offset + 3)),
 		        *answer_data);
-		ht_process_rr(rr_table, *domain_name);
+		ht_process_rr(rr_table, *final_answer);
 	}
 	else if (rr_type == RRSIG)
 	{
@@ -301,18 +301,18 @@ void process_rr_data(char* dns_data, unsigned int data_offset, uint16_t rr_type,
 		unsigned int new_offset = get_offset_to_skip_rr_name((dns_data + data_offset + 18), data_offset);
 		//fprintf(stderr, "Dns: new: %d | data len: %d\n", new_offset, (rr_data_length - 18 - (new_offset - data_offset)));
 		b64_encode((const unsigned char*)(dns_data + new_offset + 18), answer_data, (rr_data_length - 18 - (new_offset - data_offset)));
-		sprintf(*domain_name, "%s RRSIG \"%d %d %d %u %u %u %d %s %s\"", *domain_name, ntohs(*((uint16_t*) (dns_data + data_offset))),
+		sprintf(*final_answer, "%s RRSIG \"%d %d %d %u %u %u %d %s %s\"", *domain_name, ntohs(*((uint16_t*) (dns_data + data_offset))),
 		        *((uint8_t*) (dns_data + data_offset + 2)), *((uint8_t*) (dns_data + data_offset + 3)),
 		        ntohl(*((uint32_t*) (dns_data + data_offset + 4))), ntohl(*((uint32_t*) (dns_data + data_offset + 8))),
 		        ntohl(*((uint32_t*) (dns_data + data_offset + 12))), ntohs(*((uint16_t*) (dns_data + data_offset + 16))),
 		        *answer_type, *answer_data);
-		ht_process_rr(rr_table, *domain_name);
+		ht_process_rr(rr_table, *final_answer);
 	}
 	else if (rr_type == NSEC)
 	{
 		get_domain_name(dns_data, data_offset, answer_data, 0, max_len);
-		sprintf(*domain_name, "%s NSEC \"%s\"", *domain_name, *answer_data);
-		ht_process_rr(rr_table, *domain_name);
+		sprintf(*final_answer, "%s NSEC \"%s\"", *domain_name, *answer_data);
+		ht_process_rr(rr_table, *final_answer);
 	}
 	else if (rr_type == DNSKEY)
 	{
@@ -320,12 +320,12 @@ void process_rr_data(char* dns_data, unsigned int data_offset, uint16_t rr_type,
 		b64_encode((const unsigned char*)(dns_data + data_offset + 4), answer_data, (rr_data_length - 4));
 		//fprintf(stderr, "Dns: key strlen: %d\n", strlen(*answer_data));
 
-		sprintf(*domain_name, "%s DNSKEY \"%d %d %d %s\"", *domain_name, ntohs(*((uint16_t*) (dns_data + data_offset))),
+		sprintf(*final_answer, "%s DNSKEY \"%d %d %d %s\"", *domain_name, ntohs(*((uint16_t*) (dns_data + data_offset))),
 		        *((uint8_t*) (dns_data + data_offset + 2)), *((uint8_t*) (dns_data + data_offset + 3)), *answer_data);
-		ht_process_rr(rr_table, *domain_name);
+		ht_process_rr(rr_table, *final_answer);
 	}
 
-	//free(*domain_name);
+	free(*domain_name);
 	free(*answer_data);
 	free(*answer_type);
 }
