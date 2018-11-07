@@ -20,7 +20,8 @@
 #include <sys/ioctl.h>
 #include <netinet/ip.h>
 #include <netinet/udp.h>
-#include <netinet/ether.h>
+#include <netinet/if_ether.h>
+#include <net/ethernet.h>
 #include <linux/if_packet.h>
 #include <time.h>
 #include "communication.h"

@@ -2,6 +2,8 @@
 // ISA Project - DNS export by syslog protocol
 // 8.10.2018
 
+#define _BSD_SOURCE
+
 #include <stdio.h>
 #include <signal.h>
 #include <stdbool.h>
@@ -18,10 +20,11 @@
 #include <sys/ioctl.h>
 #include <netinet/ip.h>
 #include <netinet/udp.h>
-#include <netinet/ether.h>
+#include <netinet/if_ether.h>
 #include <linux/if_packet.h>
 #include <time.h>
 #include <sys/time.h>
+#include <getopt.h>
 #include "communication.h"
 #include "dns.h"
 #include "hash_table.h"
@@ -121,7 +124,7 @@ int main(int argc, char** argv)
 			memset(&server_address, 0, sizeof(server_address)); // Zeroing server_address
 			server_address.sin_family = AF_INET; // IPv4
 			server_address.sin_port = htons(SYSLOG_PORT); // Port number
-			memcpy((char *)&server_address.sin_addr.s_addr, (char *)server->h_addr, server->h_length); // server_address initial
+			memcpy((char *)&server_address.sin_addr.s_addr, (char *)server->h_addr_list[0], server->h_length); // server_address initial
 			syslog_socket = open_udp_socket(AF_INET);
 
 			if (syslog_socket <= 0) // If opening socket failed

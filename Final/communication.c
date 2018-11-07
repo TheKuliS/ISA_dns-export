@@ -16,7 +16,8 @@
 #include <sys/ioctl.h>
 #include <netinet/ip.h>
 #include <netinet/udp.h>
-#include <netinet/ether.h>
+#include <net/ethernet.h>
+#include <netinet/if_ether.h>
 #include <linux/if_packet.h>
 #include <time.h>
 #include "communication.h"
@@ -43,22 +44,6 @@ int open_raw_socket()
 int open_udp_socket(int version)
 {
 	return socket(version, SOCK_DGRAM, 0);
-}
-
-// Gets index of given interface
-int get_interface_index(struct ifreq if_id, char* if_name, int connection_socket)
-{
-	memset(&if_id, 0, sizeof(struct ifreq));
-	strncpy(if_id.ifr_name, if_name, strlen(if_name)+1);
-	return ioctl(connection_socket, SIOCGIFINDEX, &if_id);
-}
-
-// Gets mac of given interface
-int get_interface_mac(struct ifreq if_id, char* if_name, int connection_socket)
-{
-	memset(&if_id, 0, sizeof(struct ifreq));
-	strncpy(if_id.ifr_name, if_name, strlen(if_name)+1);
-	return ioctl(connection_socket, SIOCGIFHWADDR, &if_id);
 }
 
 unsigned long receive_packet(void* buffer, unsigned int packet_size, int connection_socket)
