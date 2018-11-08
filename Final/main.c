@@ -45,12 +45,11 @@ void my_handler(int signum)
 
 int main(int argc, char** argv)
 {
-	fprintf(stderr, "Program started...\n");
-
 	// Input parameters parsing
 	if (argc == 1)
 	{
-		fprintf(stderr, "Program has been executed without input parameters\nProgram ended successfully\n");
+		fprintf(stderr, "Program has been executed without input parameters\nFor more help type command: "
+				  "man -l dns-export.1\n");
 		exit(EXIT_SUCCESS);
 	}
 
@@ -91,20 +90,22 @@ int main(int argc, char** argv)
 				seconds = atoi(optarg);
 				break;
 			default:
-				fprintf(stderr, "Unknown parameter was passed.\nUsage: dns-export [-r file.pcap] [-i interface] [-s syslog-server] [-t seconds]\n");
+				fprintf(stderr, "Unknown parameter was passed.\nFor more help type command: man -l dns-export.1\n");
 				exit(EXIT_FAILURE);
 		}
 	}
 
 	if (rflag == 1 && iflag == 1)
 	{
-		fprintf(stderr, "Program can analyze only a file or an interface at once\n");
+		fprintf(stderr, "Program can analyze only a file or an interface at once\n"
+				  "For more help type command: man -l dns-export.1\n");
 		exit(EXIT_FAILURE);
 	}
 
 	if (rflag == 1 && tflag == 1)
 	{
-		fprintf(stderr, "Parameters -r and -t can't be active at once\n");
+		fprintf(stderr, "Parameters -r and -t can't be active at once\n"
+				  "For more help type command: man -l dns-export.1\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -115,6 +116,10 @@ int main(int argc, char** argv)
 	struct sockaddr_in6 server_address6;
 	struct hostent* server;
 	char hostname[256];
+
+	memset(hostname, 0, 256);
+	hostname[255] = '\0';
+	gethostname(hostname, 255);
 
 	if (sflag)
 	{
@@ -151,11 +156,6 @@ int main(int argc, char** argv)
 			}
 			ip_version = AF_INET6;
 		}
-
-
-
-		hostname[255] = '\0';
-		gethostname(hostname, 255);
 	}
 
 	char buffer[BUFFER_SIZE]; // Buffer for receiving data

@@ -1,0 +1,32 @@
+.TH dns-export 1
+.SH NAME
+dns-export \- process resource records of DNS protocol and export statistics by syslog protocol
+.SH SYNOPSIS
+.B dns-export
+[\fB\-r\fR \fIfile.pcap\fR]
+[\fB\-i\fR \fIinterface\fR]
+[\fB\-s\fR \fIsyslog-server\fR]
+[\fB\-t\fR \fIseconds\fR]
+.SH DESCRIPTION
+If \fB\-r\fR argument is passed, then DNS resource records are processed
+from \fBfile.pcap\fR. If \fB\-i\fR argument is passed, then application
+listens on \fBinterface\fR and processes DNS resource records from this 
+interface. \fB\-r\fR and \fB\-i\fR can't be active at once. Statistics
+are sent to \fBsyslog-server\fR if \fB\-s\fR is active. In case \fB\-s\fR
+argument is not passed, when processing file, resource records are printed
+to \fBstdout\fR and when listening on interface, you can print resource
+records to \fBstdout\fR by sending \fBSIGUSR1\fR signal.
+.SH OPTIONS
+.TP
+.BR \-r=\fIfile.pcap\fR
+Process records from file.pcap.
+.TP
+.BR \-i=\fIinterface\fR
+Process records from interface.
+.TP
+.BR \-s=\fIsyslog-server\fR
+Syslog server on which statistics are going to be sent.
+.TP
+.BR \-t=\fIseconds\fR
+Interval in seconds for periodical sending of statistics to syslog server.
+Default value is 60s
