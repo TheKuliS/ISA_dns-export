@@ -37,4 +37,8 @@ When listening on interface, application is in loop and can be terminated
 only by **SIGINT** signal aka **CTRL^C**, in this case memory is not 
 freed completely.
 
+##### Compilation
+
+By command ``make`` or `make all` application is completely compiled.
+
 *_Created by Lukáš Kulda (xkulda01@stud.fit.vutbr.cz)_*
