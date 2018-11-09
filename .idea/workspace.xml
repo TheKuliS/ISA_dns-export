@@ -12,10 +12,11 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="70f5ca2e-5881-4be9-a172-3ea38472620d" name="Default Changelist" comment="Makefile done, no err, no warnings">
+    <list default="true" id="70f5ca2e-5881-4be9-a172-3ea38472620d" name="Default Changelist" comment="Markdown for git, man page for linux.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Final/dns.c" beforeDir="false" afterPath="$PROJECT_DIR$/Final/dns.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Final/main.c" beforeDir="false" afterPath="$PROJECT_DIR$/Final/main.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Final/pcap.c" beforeDir="false" afterPath="$PROJECT_DIR$/Final/pcap.c" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -27,50 +28,51 @@
     <session id="1652863975">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="33" />
+          <entry key="project.closed" value="34" />
           <entry key="project.open.time.10" value="1" />
+          <entry key="project.open.time.11" value="1" />
           <entry key="project.open.time.3" value="1" />
           <entry key="project.open.time.5" value="1" />
           <entry key="project.open.time.6" value="3" />
           <entry key="project.open.time.7" value="23" />
           <entry key="project.open.time.8" value="5" />
-          <entry key="project.opened" value="34" />
+          <entry key="project.opened" value="35" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
         <counts>
-          <entry key="1" value="1" />
-          <entry key="Makefile" value="2" />
-          <entry key="c" value="45" />
+          <entry key="1" value="2" />
+          <entry key="Makefile" value="3" />
+          <entry key="c" value="51" />
           <entry key="gitignore" value="1" />
-          <entry key="h" value="17" />
-          <entry key="md" value="1" />
+          <entry key="h" value="19" />
+          <entry key="md" value="2" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.open">
         <counts>
-          <entry key="Markdown" value="1" />
-          <entry key="ObjectiveC" value="62" />
-          <entry key="PLAIN_TEXT" value="4" />
+          <entry key="Markdown" value="2" />
+          <entry key="ObjectiveC" value="70" />
+          <entry key="PLAIN_TEXT" value="6" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
           <entry key="Makefile" value="7" />
-          <entry key="c" value="17827" />
+          <entry key="c" value="18395" />
           <entry key="gitignore" value="10" />
           <entry key="h" value="2396" />
-          <entry key="md" value="1767" />
-          <entry key="txt" value="730" />
+          <entry key="md" value="1873" />
+          <entry key="txt" value="770" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.cidr.testingFrameworks.usages" />
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="CommandLine" value="1" />
-          <entry key="Markdown" value="1766" />
-          <entry key="ObjectiveC" value="20223" />
-          <entry key="PLAIN_TEXT" value="747" />
+          <entry key="Markdown" value="1872" />
+          <entry key="ObjectiveC" value="20791" />
+          <entry key="PLAIN_TEXT" value="787" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.vcs.git.usages" />
@@ -78,30 +80,13 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Final/main.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1498">
-              <caret line="107" column="19" selection-start-line="107" selection-start-column="19" selection-end-line="107" selection-end-column="19" />
+            <state relative-caret-position="168">
+              <caret line="27" column="26" lean-forward="true" selection-start-line="27" selection-start-column="26" selection-end-line="27" selection-end-column="26" />
             </state>
           </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/README.md">
-          <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-            <state split_layout="SPLIT">
-              <first_editor relative-caret-position="546">
-                <caret line="39" column="54" selection-start-line="39" selection-start-column="54" selection-end-line="39" selection-end-column="54" />
-              </first_editor>
-              <second_editor />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Final/dns-export.1">
-          <provider selected="true" editor-type-id="text-editor" />
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
@@ -114,10 +99,10 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Final/Makefile">
+        <entry file="file://$PROJECT_DIR$/Final/communication.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="252">
-              <caret line="18" selection-start-line="18" selection-end-line="18" />
+            <state relative-caret-position="-224">
+              <caret line="47" lean-forward="true" selection-start-line="47" selection-end-line="47" />
             </state>
           </provider>
         </entry>
@@ -125,8 +110,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Final/pcap.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="322">
-              <caret line="23" column="25" selection-start-line="23" selection-start-column="25" selection-end-line="23" selection-end-column="25" />
+            <state relative-caret-position="532">
+              <caret line="101" column="1" lean-forward="true" selection-start-line="101" selection-start-column="1" selection-end-line="101" selection-end-column="1" />
             </state>
           </provider>
         </entry>
@@ -134,12 +119,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Final/dns.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="98">
-              <caret line="7" selection-start-line="7" selection-end-line="7" />
-              <folding>
-                <element signature="e#849#1063#0" />
-                <element signature="e#1828#1995#0" />
-              </folding>
+            <state relative-caret-position="560">
+              <caret line="396" column="45" lean-forward="true" selection-start-line="396" selection-start-column="45" selection-end-line="396" selection-end-column="45" />
             </state>
           </provider>
         </entry>
@@ -147,7 +128,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Final/hash_table.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1512">
+            <state relative-caret-position="-784">
               <caret line="108" column="44" selection-start-line="108" selection-start-column="44" selection-end-line="108" selection-end-column="44" />
             </state>
           </provider>
@@ -156,17 +137,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Final/dns.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="476">
-              <caret line="34" column="23" selection-start-line="34" selection-start-column="23" selection-end-line="34" selection-end-column="23" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/../../xkulda01/main.c">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1232">
-              <caret line="88" column="8" selection-start-line="88" selection-start-column="8" selection-end-line="91" selection-end-column="9" />
+            <state relative-caret-position="798">
+              <caret line="57" column="35" selection-start-line="57" selection-start-column="9" selection-end-line="57" selection-end-column="35" />
             </state>
           </provider>
         </entry>
@@ -181,6 +153,11 @@
     </findStrings>
   </component>
   <component name="Git.Settings">
+    <option name="PREVIOUS_COMMIT_AUTHORS">
+      <list>
+        <option value="Lukáš Kulda &lt;43569544+thekulis@users.noreply.github.com&gt;" />
+      </list>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="IdeDocumentHistory">
@@ -192,12 +169,12 @@
         <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/Final/Makefile" />
         <option value="$PROJECT_DIR$/Final/dns.h" />
-        <option value="$PROJECT_DIR$/Final/dns.c" />
         <option value="$PROJECT_DIR$/Final/communication.c" />
-        <option value="$PROJECT_DIR$/Final/pcap.c" />
         <option value="$PROJECT_DIR$/Final/communication.h" />
-        <option value="$PROJECT_DIR$/Final/main.c" />
         <option value="$PROJECT_DIR$/README.md" />
+        <option value="$PROJECT_DIR$/Final/main.c" />
+        <option value="$PROJECT_DIR$/Final/pcap.c" />
+        <option value="$PROJECT_DIR$/Final/dns.c" />
       </list>
     </option>
   </component>
@@ -316,7 +293,8 @@
       <workItem from="1541542130400" duration="2813000" />
       <workItem from="1541580758812" duration="7064000" />
       <workItem from="1541700039881" duration="248000" />
-      <workItem from="1541700311699" duration="3668000" />
+      <workItem from="1541700311699" duration="6359000" />
+      <workItem from="1541758648182" duration="9965000" />
     </task>
     <task id="LOCAL-00001" summary="Creating socket">
       <created>1539031616824</created>
@@ -458,17 +436,31 @@
       <option name="project" value="LOCAL" />
       <updated>1541594285640</updated>
     </task>
-    <option name="localTasksCounter" value="21" />
+    <task id="LOCAL-00021" summary="Markdown for git, man page for linux.">
+      <created>1541704055354</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1541704055354</updated>
+    </task>
+    <task id="LOCAL-00022" summary="Markdown for git, man page for linux.">
+      <created>1541704241887</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1541704241887</updated>
+    </task>
+    <option name="localTasksCounter" value="23" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="345604000" />
+    <option name="totallyTimeSpent" value="358260000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.20939597" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.21208054" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -515,7 +507,8 @@
     <MESSAGE value="sprintf to final_answer not domain_name" />
     <MESSAGE value="compiled on merlin and isa2015 virtual successful" />
     <MESSAGE value="Makefile done, no err, no warnings" />
-    <option name="LAST_COMMIT_MESSAGE" value="Makefile done, no err, no warnings" />
+    <MESSAGE value="Markdown for git, man page for linux." />
+    <option name="LAST_COMMIT_MESSAGE" value="Markdown for git, man page for linux." />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://E:/FIT_VUT/4th_semester/IPK/project1/final/ipk-client.c" />
@@ -560,10 +553,30 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Final/communication.c">
+    <entry file="file://$PROJECT_DIR$/../../xkulda01/main.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1232">
+          <caret line="88" column="8" selection-start-line="88" selection-start-column="8" selection-end-line="91" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/README.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="FIRST">
+          <first_editor relative-caret-position="574">
+            <caret line="41" column="69" selection-start-line="41" selection-start-column="69" selection-end-line="41" selection-end-column="69" />
+          </first_editor>
+          <second_editor />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Final/dns-export.1">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Final/Makefile">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="252">
-          <caret line="18" column="25" selection-start-line="18" selection-start-column="25" selection-end-line="18" selection-end-column="25" />
+          <caret line="18" selection-start-line="18" selection-end-line="18" />
         </state>
       </provider>
     </entry>
@@ -574,69 +587,45 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Final/Makefile">
+    <entry file="file://$PROJECT_DIR$/Final/communication.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="252">
-          <caret line="18" selection-start-line="18" selection-end-line="18" />
+        <state relative-caret-position="-224">
+          <caret line="47" lean-forward="true" selection-start-line="47" selection-end-line="47" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/Final/pcap.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="322">
-          <caret line="23" column="25" selection-start-line="23" selection-start-column="25" selection-end-line="23" selection-end-column="25" />
+        <state relative-caret-position="532">
+          <caret line="101" column="1" lean-forward="true" selection-start-line="101" selection-start-column="1" selection-end-line="101" selection-end-column="1" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/Final/dns.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="98">
-          <caret line="7" selection-start-line="7" selection-end-line="7" />
-          <folding>
-            <element signature="e#849#1063#0" />
-            <element signature="e#1828#1995#0" />
-          </folding>
+        <state relative-caret-position="560">
+          <caret line="396" column="45" lean-forward="true" selection-start-line="396" selection-start-column="45" selection-end-line="396" selection-end-column="45" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/Final/hash_table.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1512">
+        <state relative-caret-position="-784">
           <caret line="108" column="44" selection-start-line="108" selection-start-column="44" selection-end-line="108" selection-end-column="44" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/Final/dns.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="476">
-          <caret line="34" column="23" selection-start-line="34" selection-start-column="23" selection-end-line="34" selection-end-column="23" />
+        <state relative-caret-position="798">
+          <caret line="57" column="35" selection-start-line="57" selection-start-column="9" selection-end-line="57" selection-end-column="35" />
         </state>
       </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../../xkulda01/main.c">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1232">
-          <caret line="88" column="8" selection-start-line="88" selection-start-column="8" selection-end-line="91" selection-end-column="9" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Final/dns-export.1">
-      <provider selected="true" editor-type-id="text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/Final/main.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1498">
-          <caret line="107" column="19" selection-start-line="107" selection-start-column="19" selection-end-line="107" selection-end-column="19" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/README.md">
-      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-        <state split_layout="SPLIT">
-          <first_editor relative-caret-position="546">
-            <caret line="39" column="54" selection-start-line="39" selection-start-column="54" selection-end-line="39" selection-end-column="54" />
-          </first_editor>
-          <second_editor />
+        <state relative-caret-position="168">
+          <caret line="27" column="26" lean-forward="true" selection-start-line="27" selection-start-column="26" selection-end-line="27" selection-end-column="26" />
         </state>
       </provider>
     </entry>

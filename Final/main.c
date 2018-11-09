@@ -48,7 +48,7 @@ int main(int argc, char** argv)
 	// Input parameters parsing
 	if (argc == 1)
 	{
-		fprintf(stderr, "Program has been executed without input parameters\nFor more help type command: "
+		fprintf(stderr, "INFO: Program has been executed without input parameters\nFor more help type command: "
 				  "man -l dns-export.1\n");
 		exit(EXIT_SUCCESS);
 	}
@@ -66,6 +66,7 @@ int main(int argc, char** argv)
 	int arg = 0;
 	int result = EXIT_SUCCESS;
 
+	// Parameters parsing
 	while ((arg = getopt(argc, argv, "r:i:s:t:")) != -1)
 	{
 		switch (arg)
@@ -90,21 +91,28 @@ int main(int argc, char** argv)
 				seconds = atoi(optarg);
 				break;
 			default:
-				fprintf(stderr, "Unknown parameter was passed.\nFor more help type command: man -l dns-export.1\n");
+				fprintf(stderr, "INFO: Unknown parameter was passed.\nFor more help type command: man -l dns-export.1\n");
 				exit(EXIT_FAILURE);
 		}
 	}
 
+	if(sflag == 1 && rflag == 0 && iflag == 0)
+	{
+		fprintf(stderr, "INFO: Program has to make statistic from something to send to syslog server\n"
+		                "For more help type command: man -l dns-export.1\n");
+		exit(EXIT_FAILURE);
+	}
+
 	if (rflag == 1 && iflag == 1)
 	{
-		fprintf(stderr, "Program can analyze only a file or an interface at once\n"
+		fprintf(stderr, "INFO: Program can analyze only a file or an interface at once\n"
 				  "For more help type command: man -l dns-export.1\n");
 		exit(EXIT_FAILURE);
 	}
 
 	if (rflag == 1 && tflag == 1)
 	{
-		fprintf(stderr, "Parameters -r and -t can't be active at once\n"
+		fprintf(stderr, "INFO: Parameters -r and -t can't be active at once\n"
 				  "For more help type command: man -l dns-export.1\n");
 		exit(EXIT_FAILURE);
 	}
@@ -117,6 +125,7 @@ int main(int argc, char** argv)
 	struct hostent* server;
 	char hostname[256];
 
+	// My hostname
 	memset(hostname, 0, 256);
 	hostname[255] = '\0';
 	gethostname(hostname, 255);
@@ -124,7 +133,7 @@ int main(int argc, char** argv)
 	if (sflag)
 	{
 		// Get server info
-		if((server = gethostbyname(syslog_server)) != NULL)
+		if((server = gethostbyname(syslog_server)) != NULL) // IPv4 and hostname
 		{
 			memset(&server_address, 0, sizeof(server_address)); // Zeroing server_address
 			server_address.sin_family = AF_INET; // IPv4
@@ -134,13 +143,13 @@ int main(int argc, char** argv)
 
 			if (syslog_socket <= 0) // If opening socket failed
 			{
-				fprintf(stderr, "Creating socket failed.\n");
+				fprintf(stderr, "INFO: Creating socket failed.\n");
 				close(syslog_socket);
 				exit(EXIT_FAILURE);
 			}
 			ip_version = AF_INET;
 		}
-		else
+		else // IPv6
 		{
 			memset(&server_address6, 0, sizeof(server_address6)); // Zeroing server_address
 			server_address6.sin6_family = AF_INET6; // IPv6
@@ -150,7 +159,7 @@ int main(int argc, char** argv)
 
 			if (syslog_socket <= 0) // If opening socket failed
 			{
-				fprintf(stderr, "Creating socket failed.\n");
+				fprintf(stderr, "INFO: Creating socket failed.\n");
 				close(syslog_socket);
 				exit(EXIT_FAILURE);
 			}
@@ -193,6 +202,7 @@ int main(int argc, char** argv)
 					processed_item = processed_item->ptrnext;
 				}
 			}
+			fprintf(stderr, "INFO: Statistics sent successfully.\n");
 			htClearAll(rr_table);
 			close(syslog_socket);
 		}
@@ -212,7 +222,7 @@ int main(int argc, char** argv)
 		connection_socket = open_raw_socket(); // Open raw listening socket
 		if (connection_socket == -1) // If opening socket failed
 		{
-			fprintf(stderr, "Creating socket failed.\n");
+			fprintf(stderr, "INFO: Creating socket failed.\n");
 			free(rr_table);
 			close(connection_socket);
 			exit(EXIT_FAILURE);
@@ -220,7 +230,7 @@ int main(int argc, char** argv)
 
 		if (setsockopt(connection_socket, SOL_SOCKET, SO_BINDTODEVICE, if_name, strlen(if_name)+1) == -1) // Bind socket to device
 		{
-			fprintf(stderr, "Binding socket failed.\n");
+			fprintf(stderr, "INFO: Binding socket failed.\n");
 			free(rr_table);
 			close(connection_socket);
 			exit(EXIT_FAILURE);
@@ -229,7 +239,7 @@ int main(int argc, char** argv)
 		int sockopt = 1;
 		if (setsockopt(connection_socket, SOL_SOCKET, SO_REUSEADDR, &sockopt, sizeof sockopt) == -1) // Allow reuse of socket
 		{
-			fprintf(stderr, "Reusing socket failed.\n");
+			fprintf(stderr, "INFO: Reusing socket failed.\n");
 			free(rr_table);
 			close(connection_socket);
 			exit(EXIT_FAILURE);
@@ -240,14 +250,14 @@ int main(int argc, char** argv)
 		recv_timeout.tv_usec = 0;
 		if (setsockopt(connection_socket, SOL_SOCKET, SO_RCVTIMEO, &recv_timeout, sizeof(struct timeval)) == -1) // Timeout responses
 		{
-			fprintf(stderr, "Timing socket failed.\n");
+			fprintf(stderr, "INFO: Timing socket failed.\n");
 			free(rr_table);
 			close(connection_socket);
 			exit(EXIT_FAILURE);
 		}
 
 		result = process_dns_packet(buffer, rr_table, connection_socket, syslog_socket, server_address, seconds, sflag, hostname,
-				ip_version, server_address6);
+				ip_version, server_address6); // Process dns records
 
 		close(connection_socket);
 	}
