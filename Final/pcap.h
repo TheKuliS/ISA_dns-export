@@ -28,6 +28,9 @@
 #ifndef ISA_PCAP_H
 #define ISA_PCAP_H
 
+/*
+ * Global header of *.pcap file
+ */
 typedef struct pcap_hdr_s {
 	uint32_t magic_number;   /* magic number */
 	uint16_t version_major;  /* major version number */
@@ -38,6 +41,9 @@ typedef struct pcap_hdr_s {
 	uint32_t network;        /* data link type */
 } pcap_hdr_t;
 
+/*
+ * Packet header of *.pcap file
+ */
 typedef struct pcaprec_hdr_s {
 	uint32_t ts_sec;         /* timestamp seconds */
 	uint32_t ts_usec;        /* timestamp microseconds */
@@ -45,6 +51,9 @@ typedef struct pcaprec_hdr_s {
 	uint32_t orig_len;       /* actual length of packet */
 } pcaprec_hdr_t;
 
+/*
+ * Function that processes DNS records from given pcap file.
+ */
 int process_pcap_file(char* filename, char* buffer, tHTable* rr_table);
 
 #endif //ISA_PCAP_H

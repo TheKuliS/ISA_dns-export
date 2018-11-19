@@ -42,11 +42,11 @@ int hashCode ( tKey key ) {
 
 	return ( retval % HTSIZE );
 }
+
 /*
 ** Inicializace tabulky s explicitně zřetězenými synonymy.  Tato procedura
 ** se volá pouze před prvním použitím tabulky.
 */
-
 void htInit ( tHTable* ptrht ) {
 
 	for (int i = 0; i < HTSIZE; i++) {
@@ -60,7 +60,6 @@ void htInit ( tHTable* ptrht ) {
 ** vrací se hodnota NULL.
 **
 */
-
 tHTItem* htSearch ( tHTable* ptrht, tKey key ) {
 	if (*ptrht == NULL || (*ptrht)[hashCode(key)] == NULL) { // Pokud nebyla tabulka inicialzována, nebo pokud hledaný prvek v tabulce není.
 		return NULL;
@@ -88,7 +87,6 @@ tHTItem* htSearch ( tHTable* ptrht, tKey key ) {
 ** prvku do seznamu synonym použijte co nejefektivnější způsob,
 ** tedy proveďte.vložení prvku na začátek seznamu.
 **/
-
 void htInsert ( tHTable* ptrht, tKey key, tData data ) {
 	if (*ptrht != NULL) {
 		tHTItem *vyhledany = htSearch(ptrht, key); // Vyhledání prvku.
@@ -125,7 +123,6 @@ void htInsert ( tHTable* ptrht, tKey key, tData data ) {
 **
 ** Využijte dříve vytvořenou funkci HTSearch.
 */
-
 tData* htRead ( tHTable* ptrht, tKey key ) {
 
 	if (*ptrht == NULL || (*ptrht)[hashCode(key)] == NULL) { // Pokud nebyla tabulka inicialzována, nebo pokud hledaný prvek v tabulce není.
@@ -150,7 +147,6 @@ tData* htRead ( tHTable* ptrht, tKey key ) {
 **
 ** V tomto případě NEVYUŽÍVEJTE dříve vytvořenou funkci HTSearch.
 */
-
 void htDelete ( tHTable* ptrht, tKey key ) {
 
 	if ((*ptrht)[hashCode(key)] != NULL) { // Pokud položka s uvedeným klíčem existuje.
@@ -181,7 +177,6 @@ void htDelete ( tHTable* ptrht, tKey key ) {
 ** Tato procedura zruší všechny položky tabulky, korektně uvolní prostor,
 ** který tyto položky zabíraly, a uvede tabulku do počátečního stavu.
 */
-
 void htClearAll ( tHTable* ptrht ) {
 
 	tHTItem *ruseny = NULL;
@@ -201,6 +196,9 @@ void htClearAll ( tHTable* ptrht ) {
 	}
 }
 
+/*
+ * Procedure that inserts or updates resource record.
+ */
 void ht_process_rr(tHTable* ptrht, char* rr_string)
 {
 	tHTItem* rr_item;
@@ -219,6 +217,9 @@ void ht_process_rr(tHTable* ptrht, char* rr_string)
 
 }
 
+/*
+ * Procedure that prints whole content of hash table.
+ */
 void ht_foreach(tHTable* ptrht, void (*item_callback)(tHTItem* item))
 {
 	for(int i = 0; i < HTSIZE; i++)
@@ -232,6 +233,9 @@ void ht_foreach(tHTable* ptrht, void (*item_callback)(tHTItem* item))
 	}
 }
 
+/*
+ * Procedure that prints given item of hash table.
+ */
 void ht_print_item(tHTItem* item)
 {
 	fprintf(stdout, "%s %d\n", item->key, item->data);

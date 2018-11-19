@@ -31,6 +31,9 @@
 
 const char b64chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
+/*
+ * Help function for key encoding that returns new size that needs to be allocated.
+ */
 size_t b64_encoded_size(size_t inlen)
 {
 	size_t ret;
@@ -44,6 +47,9 @@ size_t b64_encoded_size(size_t inlen)
 	return ret;
 }
 
+/*
+ * Procedure that encodes DNS key.
+ */
 void b64_encode(const unsigned char *in, char** out, size_t len) // DNSKEY encoding
 {
 	size_t  elen;
@@ -84,6 +90,9 @@ void b64_encode(const unsigned char *in, char** out, size_t len) // DNSKEY encod
 	}
 }
 
+/*
+ * Debug print for DNS header.
+ */
 void debug_data_print(unsigned char *data) // Debug print
 {
 	for (int i = 0; i < 8; i++)
@@ -93,6 +102,9 @@ void debug_data_print(unsigned char *data) // Debug print
 	printf("\n");
 }
 
+/*
+ * Function that processes DNS records and sends them to syslog server if given.
+ */
 int process_dns_packet(char* buffer, tHTable* rr_table, int connection_socket, int syslog_socket,
 		struct sockaddr_in server_address, int seconds, int sflag, char* hostname, int ip_version,
         struct sockaddr_in6 server_address6)
@@ -178,6 +190,9 @@ int process_dns_packet(char* buffer, tHTable* rr_table, int connection_socket, i
 	return 0;
 }
 
+/*
+ * Procedure that processes DNS record based on its type.
+ */
 void process_rr_data(char* dns_data, unsigned int data_offset, uint16_t rr_type, uint16_t rr_data_length, char** domain_name,
                      char** final_answer, char** answer_type, char** answer_data, unsigned int max_len, tHTable* rr_table)
 {
@@ -295,6 +310,9 @@ void process_rr_data(char* dns_data, unsigned int data_offset, uint16_t rr_type,
 	free(*answer_type);
 }
 
+/*
+ * Debug print for DNS header.
+ */
 void print_dns_header(struct dns_hdr* dns_header) // Debug print
 {
 	fprintf(stderr, "DNS Header:\n");
@@ -305,6 +323,9 @@ void print_dns_header(struct dns_hdr* dns_header) // Debug print
 	fprintf(stderr, "\t|-Total additional RRs : %hu\n", ntohs(dns_header->total_additional_RRs));
 }
 
+/*
+ * Recursive procedure that gets domain name of processed DNS record.
+ */
 void get_domain_name(char* dns_data, unsigned int data_offset, char** domain_name, unsigned int index, unsigned int max_len)
 {
 	uint8_t* name_length = (uint8_t*) dns_data + data_offset; // String length
@@ -358,6 +379,9 @@ void get_domain_name(char* dns_data, unsigned int data_offset, char** domain_nam
 	return;
 }
 
+/*
+ * Function that counts and returns offset which needs to be skipped to process first RR answer.
+ */
 uint16_t get_offset_to_skip_queries(char* dns_queries, uint16_t total_queries) // Offset
 {
 	uint16_t offset = 0;
@@ -369,6 +393,9 @@ uint16_t get_offset_to_skip_queries(char* dns_queries, uint16_t total_queries) /
 	return (offset +1);
 }
 
+/*
+ * Function that dynamically skips domain name of RR answer.
+ */
 uint16_t get_offset_to_skip_rr_name(char* dns_queries, unsigned int data_offset) // Offset
 {
 	while ((*((uint8_t*) (dns_queries + data_offset)) & 0xc0) != 0xc0)
@@ -383,6 +410,9 @@ uint16_t get_offset_to_skip_rr_name(char* dns_queries, unsigned int data_offset)
 	return (data_offset + 2);
 }
 
+/*
+ * Procedure that gets type of currently processed RR answer.
+ */
 void get_rr_type(char* dns_data, unsigned int data_offset, uint16_t* rr_type) // Type of DNS answer
 {
 	memset(rr_type, 0, sizeof(uint16_t));
@@ -390,6 +420,9 @@ void get_rr_type(char* dns_data, unsigned int data_offset, uint16_t* rr_type) //
 	*rr_type = ntohs(*rr_type);
 }
 
+/*
+ * Procedure that gets data length of currently processed RR answer.
+ */
 void get_rr_data_length(char* dns_data, unsigned int data_offset, uint16_t* rr_data_length) // DNS answer length
 {
 	memset(rr_data_length, 0, sizeof(uint16_t));

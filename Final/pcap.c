@@ -30,6 +30,9 @@
 #include "hash_table.h"
 #include "pcap.h"
 
+/*
+ * Function that processes DNS records from given pcap file.
+ */
 int process_pcap_file(char* filename, char* buffer, tHTable* rr_table)
 {
 	FILE* pcap_file;

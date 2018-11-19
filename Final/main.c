@@ -32,7 +32,10 @@
 
 tHTable* rr_table; // Hash table of resource records
 
-// SIGUSR1 handler
+/*
+ * Handler for SIGUSR1 prints content of hash table, processed
+ * records exactly.
+ */
 void my_handler(int signum)
 {
 	if (signum == SIGUSR1)
@@ -43,6 +46,9 @@ void my_handler(int signum)
 	return;
 }
 
+/*
+ * Main program, parsing parameters and calling procedures.
+ */
 int main(int argc, char** argv)
 {
 	// Input parameters parsing

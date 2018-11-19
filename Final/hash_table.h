@@ -56,24 +56,82 @@ typedef tHTItem* tHTable[MAX_HTSIZE];
 
 /* Hlavičky řešených procedur a funkcí. */
 
+/*          -------
+** Rozptylovací funkce - jejím úkolem je zpracovat zadaný klíč a přidělit
+** mu index v rozmezí 0..HTSize-1.  V ideálním případě by mělo dojít
+** k rovnoměrnému rozptýlení těchto klíčů po celé tabulce.  V rámci
+** pokusů se můžete zamyslet nad kvalitou této funkce.  (Funkce nebyla
+** volena s ohledem na maximální kvalitu výsledku). }
+*/
 int hashCode(tKey key);
 
+/*
+** Inicializace tabulky s explicitně zřetězenými synonymy.  Tato procedura
+** se volá pouze před prvním použitím tabulky.
+*/
 void htInit(tHTable* ptrht);
 
+/* TRP s explicitně zřetězenými synonymy.
+** Vyhledání prvku v TRP ptrht podle zadaného klíče key.  Pokud je
+** daný prvek nalezen, vrací se ukazatel na daný prvek. Pokud prvek nalezen není,
+** vrací se hodnota NULL.
+**
+*/
 tHTItem* htSearch(tHTable* ptrht, tKey key);
 
+/*
+** TRP s explicitně zřetězenými synonymy.
+** Tato procedura vkládá do tabulky ptrht položku s klíčem key a s daty
+** data.  Protože jde o vyhledávací tabulku, nemůže být prvek se stejným
+** klíčem uložen v tabulce více než jedenkrát.  Pokud se vkládá prvek,
+** jehož klíč se již v tabulce nachází, aktualizujte jeho datovou část.
+**
+** Využijte dříve vytvořenou funkci htSearch.  Při vkládání nového
+** prvku do seznamu synonym použijte co nejefektivnější způsob,
+** tedy proveďte.vložení prvku na začátek seznamu.
+**/
 void htInsert(tHTable* ptrht, tKey key, tData data);
 
+/*
+** TRP s explicitně zřetězenými synonymy.
+** Tato funkce zjišťuje hodnotu datové části položky zadané klíčem.
+** Pokud je položka nalezena, vrací funkce ukazatel na položku
+** Pokud položka nalezena nebyla, vrací se funkční hodnota NULL
+**
+** Využijte dříve vytvořenou funkci HTSearch.
+*/
 tData* htRead(tHTable* ptrht, tKey key);
 
+/*
+** TRP s explicitně zřetězenými synonymy.
+** Tato procedura vyjme položku s klíčem key z tabulky
+** ptrht.  Uvolněnou položku korektně zrušte.  Pokud položka s uvedeným
+** klíčem neexistuje, dělejte, jako kdyby se nic nestalo (tj. nedělejte
+** nic).
+**
+** V tomto případě NEVYUŽÍVEJTE dříve vytvořenou funkci HTSearch.
+*/
 void htDelete(tHTable* ptrht, tKey key);
 
+/* TRP s explicitně zřetězenými synonymy.
+** Tato procedura zruší všechny položky tabulky, korektně uvolní prostor,
+** který tyto položky zabíraly, a uvede tabulku do počátečního stavu.
+*/
 void htClearAll(tHTable* ptrht);
 
+/*
+ * Procedure that inserts or updates resource record.
+ */
 void ht_process_rr(tHTable* ptrht, char* rr_string);
 
+/*
+ * Procedure that prints whole content of hash table.
+ */
 void ht_foreach(tHTable* ptrht, void (*item_callback)(tHTItem* item));
 
+/*
+ * Procedure that prints given item of hash table.
+ */
 void ht_print_item(tHTItem* item);
 
 #endif //ISA_HASH_TABLE_H

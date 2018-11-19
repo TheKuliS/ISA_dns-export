@@ -23,7 +23,9 @@
 #include "communication.h"
 #include "dns.h"
 
-// Checksum for UDP packet
+/*
+ * Checksum of UDP packet.
+ */
 unsigned short checksum(unsigned short *buf, int nwords) // Checksum
 {
 	unsigned long sum;
@@ -34,24 +36,34 @@ unsigned short checksum(unsigned short *buf, int nwords) // Checksum
 	return (unsigned short)(~sum);
 }
 
-// Open new raw connection socket
+/*
+ * Creates raw socket.
+ */
 int open_raw_socket()
 {
 	return socket(AF_PACKET, SOCK_RAW, htons(0x800));
 }
 
-// Open new udp connection socket
+/*
+ * Creates udp socket of given version (IPv4 or IPv6).
+ */
 int open_udp_socket(int version)
 {
 	return socket(version, SOCK_DGRAM, 0);
 }
 
+/*
+ * Function for receiving a message for specific socket.
+ */
 unsigned long receive_packet(void* buffer, unsigned int packet_size, int connection_socket)
 {
 	memset(buffer, 0, packet_size);
 	return recvfrom(connection_socket, buffer, packet_size, 0, NULL, NULL);
 }
 
+/*
+ * Procedure for debug print of ethernet header.
+ */
 void print_ethernet_header(struct ether_header* ethernet_header) // Debug print
 {
 	fprintf(stdout, "\nEthernet Header:\n");
@@ -60,6 +72,9 @@ void print_ethernet_header(struct ether_header* ethernet_header) // Debug print
 	fprintf(stdout, "\t|-Protocol : %d\n",ethernet_header->ether_type);
 }
 
+/*
+ * Procedure for debug print of ip header.
+ */
 void print_ip_header(struct iphdr* ip_header) // Debug print
 {
 	struct sockaddr_in source;
@@ -82,6 +97,10 @@ void print_ip_header(struct iphdr* ip_header) // Debug print
 	fprintf(stdout , "\t|-Source IP : %s\n", inet_ntoa(source.sin_addr));
 	fprintf(stdout , "\t|-Destination IP : %s\n",inet_ntoa(destination.sin_addr));
 }
+
+/*
+ * Procedure for debug print of udp header.
+ */
 void print_udp_header(struct udphdr* udp_header) // Debug print
 {
 	fprintf(stdout, "\nUDP Header:\n");
@@ -91,6 +110,9 @@ void print_udp_header(struct udphdr* udp_header) // Debug print
 	fprintf(stdout , "\t|-UDP Checksum : %d\n" , ntohs(udp_header->check));
 }
 
+/*
+ * Procedure that creates timestamp formated for syslog message.
+ */
 void get_timestamp(char* string_time)
 {
 	time_t atm;
